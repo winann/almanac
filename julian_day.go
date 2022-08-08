@@ -71,7 +71,7 @@ func timeFromJD(julianDay JulianDay) (time Time) {
 	return
 }
 
-//func timeFromJD(julianDay JulianDay) (time AlmanacTime) {
+//func timeFromJD(julianDay JulianDay) (Time AlmanacTime) {
 //	//// 取得日数的整数部分i及小数部分f
 //	jd := big.NewFloat(julianDay)
 //	var fi = jd.Add(jd, big.NewFloat(0.500001))
@@ -97,22 +97,22 @@ func timeFromJD(julianDay JulianDay) (time Time) {
 //
 //	y := fi.Sub(fi, big.NewFloat(122.1))
 //	year, _ := y.Quo(y, big.NewFloat(365.25)).Int64()
-//	time.year = int(year)
+//	Time.year = int(year)
 //	offSet, _ := new(big.Float).Mul(big.NewFloat(365.25), new(big.Float).SetInt64(year)).Int(nil)
 //	bi = bi.Sub(bi, offSet)
 //	month, _ := new(big.Float).SetInt(bi).Quo(new(big.Float).SetInt(bi), big.NewFloat(30.601)).Int64()
-//	time.month = int(month)
+//	Time.month = int(month)
 //	offSet, _ = new(big.Float).Mul(big.NewFloat(30.601), new(big.Float).SetInt64(month)).Int(nil)
 //	bi = bi.Sub(bi, offSet)
 //	Day := bi.Int64()
-//	time.Day = int(Day)
+//	Time.Day = int(Day)
 //
-//	if time.month > 13 {
-//		time.month -= 13
-//		time.year -= 4715
+//	if Time.month > 13 {
+//		Time.month -= 13
+//		Time.year -= 4715
 //	} else {
-//		time.month -= 1
-//		time.year -= 4716
+//		Time.month -= 1
+//		Time.year -= 4716
 //	}
 //
 //	//// 日的小数转化为时分秒
@@ -123,16 +123,16 @@ func timeFromJD(julianDay JulianDay) (time Time) {
 //	f := fi2.Sub(fi2, new(big.Float).SetInt(bi2))
 //	f = f.Mul(f, big.NewFloat(24))
 //	hour, _ := f.Int64()
-//	time.hour = int(hour)
+//	Time.hour = int(hour)
 //
 //	f = f.Sub(f, new(big.Float).SetInt64(hour))
 //	f = f.Mul(f, big.NewFloat(60))
 //	minute, _ := f.Int64()
-//	time.minute = int(minute)
+//	Time.minute = int(minute)
 //
 //	f = f.Sub(f, new(big.Float).SetInt64(minute))
 //	f = f.Mul(f, big.NewFloat(60))
 //	second, _ := f.Int64()
-//	time.second = int(second)
+//	Time.second = int(second)
 //	return
 //}

@@ -74,9 +74,10 @@ func NewMonth(year, month int) (m Month) {
 	// 年号
 	m.dynasty = *NewDynastyInfo(m.year)
 
+	var firstDayLunar = NewLunar(m.firstDayJD)
 	for i := 0; i < m.daysCount; i++ {
-		var day = newDayWithMonth(m, i)
-		m.days = append(m.days, day)
+		var day = newDayWithMonth(m, i, firstDayLunar)
+		m.days = append(m.days, *day)
 	}
 	return
 }
@@ -102,13 +103,13 @@ func (m Month) FormatCal() string {
 			sb.WriteString("\n")
 			weekNum = day.weekNumInMonth
 		}
-		if day.time.day < 10 {
+		if day.Time.day < 10 {
 			sb.WriteString("  ")
 		} else {
 			sb.WriteString(" ")
 		}
-		sb.WriteString(strconv.Itoa(day.time.day))
-		if day.weekday != 6 && i < len(m.days)-1 {
+		sb.WriteString(strconv.Itoa(day.Time.day))
+		if day.week != 6 && i < len(m.days)-1 {
 			sb.WriteString(" ")
 		}
 	}

@@ -2,6 +2,7 @@ package almanac
 
 import (
 	"testing"
+	"time"
 )
 
 func TestToJulianDay(t *testing.T) {
@@ -61,49 +62,49 @@ func TestToJulianDay(t *testing.T) {
 
 func TestGetDaysOffJ2000(t *testing.T) {
 	var time = Time{2000, 1, 1, 12, 0, 0}
-	var off = time.getMonthFirstDaysOffJ2000()
+	var off = time.getDaysOffJ2000()
 	if off != 0 {
 		t.Error("J2000 days off error:", off, "But Expect:", 0)
 	}
 
 	time = Time{2022, 7, 14, 12, 0, 0}
-	off = time.getMonthFirstDaysOffJ2000()
+	off = time.getDaysOffJ2000()
 	if off != 8230 {
 		t.Error("2022-7-14 12:00:00 days off error:", off, "But Expect:", 8230)
 	}
 
 	time = Time{1582, 10, 1, 12, 0, 0}
-	off = time.getMonthFirstDaysOffJ2000()
+	off = time.getDaysOffJ2000()
 	if off != -152388 {
 		t.Error("1582-10-1 12:00:00 days off error:", off, "But Expect:", -152388)
 	}
 
 	time = Time{1582, 10, 4, 12, 0, 0}
-	off = time.getMonthFirstDaysOffJ2000()
+	off = time.getDaysOffJ2000()
 	if off != -152385 {
 		t.Error("1582-10-4 12:00:00 days off error:", off, "But Expect:", -152385)
 	}
 
 	time = Time{1582, 10, 15, 12, 0, 0}
-	off = time.getMonthFirstDaysOffJ2000()
+	off = time.getDaysOffJ2000()
 	if off != -152384 {
 		t.Error("1582-10-15 12:00:00 days off error:", off, "But Expect:", -152384)
 	}
 
 	time = Time{1582, 10, 18, 12, 0, 0}
-	off = time.getMonthFirstDaysOffJ2000()
+	off = time.getDaysOffJ2000()
 	if off != -152381 {
 		t.Error("1582-10-18 12:00:00 days off error:", off, "But Expect:", -152381)
 	}
 
 	time = Time{1582, 10, 31, 12, 0, 0}
-	off = time.getMonthFirstDaysOffJ2000()
+	off = time.getDaysOffJ2000()
 	if off != -152368 {
 		t.Error("1582-10-31 12:00:00 days off error:", off, "But Expect:", -152368)
 	}
 
 	time = Time{9999, 12, 31, 12, 0, 0}
-	off = time.getMonthFirstDaysOffJ2000()
+	off = time.getDaysOffJ2000()
 	if off != 2921939 {
 		t.Error("9999-12-31 12:00:00 days off error:", off, "But Expect:", 2921939)
 	}
@@ -221,6 +222,10 @@ func TestGetMonthFirstDayInfo(t *testing.T) {
 
 // 获取当前时间
 func TestTimeNow(t *testing.T) {
-	var time = TimeNow()
-	t.Log(time)
+	var t1 = TimeNow()
+	var now = time.Now()
+	var e = Time{year: now.Year(), month: int(now.Month()), day: now.Day(), hour: now.Hour(), minute: now.Minute(), second: now.Second()}
+	if t1 != e {
+		t.Error("TimeNow may")
+	}
 }
