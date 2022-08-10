@@ -28,11 +28,11 @@ func julianDay(year, month int, day JulianDay) (jd JulianDay) {
 }
 
 // timeFromJD 根据儒略日得到当前的日期时间
-// 返回 AlmanacTime 对象
+// 返回 almanac.Time 对象
 func timeFromJD(julianDay JulianDay) (time Time) {
 	// 取得日数的整数部分i及小数部分f
-	var i = int(julianDay + 0.50000001)
-	var f = julianDay + 0.50000001 - float64(i)
+	var i = int(julianDay + 0.5)
+	var f = julianDay + 0.5 - float64(i)
 	var c int
 	if i >= 2299161 {
 		c = int((float64(i) - 1867216.25) / 36524.25)
@@ -67,7 +67,7 @@ func timeFromJD(julianDay JulianDay) (time Time) {
 	// 秒
 	f -= float64(time.minute)
 	f *= 60
-	time.second = int(f)
+	time.second = floorInt(f + 0.5)
 	return
 }
 

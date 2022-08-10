@@ -18,15 +18,15 @@ type lunar struct {
 	LmonthStr string // 干支纪月名称
 	Lday2     string // 干支纪日
 
-	Ldi  int    // 距农历月首的编移量,0对应初一
-	Ldc  string // 农历日名称
-	Ljq  string // 节气名称
-	yxmc string // 月相名称
-	yxjd string // 月相时刻(儒略日)
-	yxsj string // 月相时间串
-	jqmc string // 定气名称
-	jqjd int    // 节气时刻(儒略日)
-	jqsj string // 节气时间串
+	Ldi  int       // 距农历月首的编移量,0对应初一
+	Ldc  string    // 农历日名称
+	Ljq  string    // 节气名称
+	yxmc string    // 月相名称
+	yxjd JulianDay // 月相时刻(儒略日)
+	yxsj Time      // 月相时间
+	jqmc string    // 定气名称
+	jqjd JulianDay // 节气时刻(儒略日)
+	jqsj Time      // 节气时间
 
 	CurDZ int // 距冬至的天数
 	CurXZ int // 距夏至的天数
@@ -189,6 +189,9 @@ func (l *lunar) updateLunar(jd int) {
 	// 获取人看的信息
 	l.calcLunarInfo()
 
+	//// 月相与节气的处理
+	//l.calcYXJQ()
+
 	// 获取农历节日
 	l.calcLunarEvents()
 }
@@ -279,6 +282,185 @@ func (l *lunar) calcLunarInfo() {
 	var dInt = l.jd - 6 + 9000000
 	l.Lday2 = gan[dInt%10] + zhi[dInt%12]
 }
+
+// 月相和节气的处理，需要自己调用
+func (l *lunar) calcYXJQ() {
+	var jd = float64(l.jd) + dt_T(float64(l.jd)) - 8.0/24
+	////月相查找
+	var w = MS_aLon(jd/36525, 10, 3)
+	w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
+	var d float64
+	var D, xn int
+	l.yxmc = ""
+	l.yxjd = 0
+	l.yxsj = Time{}
+	for {
+		d = so_accurate(w)
+		D = floorInt(d + 0.5)
+		xn = floorInt(w/pi2*4+4000000.01) % 4
+		w += pi2 / 4
+
+		if D > l.jd {
+			break
+		}
+		if D < l.jd {
+			continue
+		}
+		l.yxmc = yxmc[xn] //取得月相名称
+		l.yxjd = d
+		l.yxsj = timeFromJD(d + float64(J2000))
+		if D+5 >= l.jd {
+			break
+		}
+	}
+
+	//节气查找
+	l.jqmc = ""
+	l.jqjd = 0
+	l.jqsj = Time{}
+	w = S_aLon(jd/36525, 3)
+	w = math.Floor((w-0.13)/pi2*24) * pi2 / 24
+	for {
+		d = qi_accurate(w)
+		D = floorInt(d + 0.5)
+		xn = floorInt(w/pi2*24+24000006.01) % 24
+		w += pi2 / 24
+		if D > l.jd {
+			break
+		}
+		if D < l.jd {
+			continue
+		}
+		l.jqmc = jqmc[xn] //取得节气名称
+		l.jqjd = d
+		l.jqsj = timeFromJD(d + float64(J2000))
+
+		if D+12 >= l.jd {
+			break
+		}
+	}
+
+	//var Bd0, Bdn, D, xn int
+	//var d, jd2 float64
+	//if day == nil {
+	//	day = NewDay(timeFromJD(float64(l.jd + J2000)))
+	//}
+	//Bd0 = day.getMonthFirstDaysOffJ2000()
+	//Bdn = day.monthDaysCount
+	//jd2 = float64(Bd0) + dt_T(float64(Bd0)) - 8.0/24
+	////月相查找
+	//var w = MS_aLon(jd2/36525, 10, 3)
+	//w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
+	//
+	//for {
+	//	d = so_accurate(w)
+	//	D = floorInt(d + 0.5)
+	//	xn = floorInt(w/pi2*4+4000000.01) % 4
+	//	w += pi2 / 4
+	//	if D >= Bd0+Bdn {
+	//		break
+	//	}
+	//	if D < Bd0 {
+	//		continue
+	//	}
+	//	if D-Bd0 == day.indexInMonth {
+	//		l.yxmc = yxmc[xn] //取得月相名称
+	//		l.yxjd = d
+	//		l.yxsj = timeFromJD(d + float64(J2000))
+	//	}
+	//
+	//	if D+5 >= Bd0+Bdn {
+	//		break
+	//	}
+	//}
+	//
+	////节气查找
+	//w = S_aLon(jd2/36525, 3)
+	//w = math.Floor((w-0.13)/pi2*24) * pi2 / 24
+	//for {
+	//	d = qi_accurate(w)
+	//	D = floorInt(d + 0.5)
+	//	xn = floorInt(w/pi2*24+24000006.01) % 24
+	//	w += pi2 / 24
+	//	if D >= Bd0+Bdn {
+	//		break
+	//	}
+	//	if D < Bd0 {
+	//		continue
+	//	}
+	//	if D-Bd0 == day.indexInMonth {
+	//		l.jqmc = jqmc[xn] //取得节气名称
+	//		l.jqjd = d
+	//		l.jqsj = timeFromJD(d + float64(J2000))
+	//	}
+	//
+	//	if D+12 >= Bd0+Bdn {
+	//		break
+	//	}
+	//}
+}
+
+//// 月相和节气的处理
+//func (l *lunar) calcYXJQ(day *Day) {
+//	var Bd0, Bdn, D, xn int
+//	var d, jd2 float64
+//	if day == nil {
+//		day = NewDay(timeFromJD(float64(l.jd + J2000)))
+//	}
+//	Bd0 = day.getMonthFirstDaysOffJ2000()
+//	Bdn = day.monthDaysCount
+//	jd2 = float64(Bd0) + dt_T(float64(Bd0)) - 8.0/24
+//	//月相查找
+//	var w = MS_aLon(jd2/36525, 10, 3)
+//	w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
+//
+//	for {
+//		d = so_accurate(w)
+//		D = floorInt(d + 0.5)
+//		xn = floorInt(w/pi2*4+4000000.01) % 4
+//		w += pi2 / 4
+//		if D >= Bd0+Bdn {
+//			break
+//		}
+//		if D < Bd0 {
+//			continue
+//		}
+//		if D-Bd0 == day.indexInMonth {
+//			l.yxmc = yxmc[xn] //取得月相名称
+//			l.yxjd = d
+//			l.yxsj = timeFromJD(d + float64(J2000))
+//		}
+//
+//		if D+5 >= Bd0+Bdn {
+//			break
+//		}
+//	}
+//
+//	//节气查找
+//	w = S_aLon(jd2/36525, 3)
+//	w = math.Floor((w-0.13)/pi2*24) * pi2 / 24
+//	for {
+//		d = qi_accurate(w)
+//		D = floorInt(d + 0.5)
+//		xn = floorInt(w/pi2*24+24000006.01) % 24
+//		w += pi2 / 24
+//		if D >= Bd0+Bdn {
+//			break
+//		}
+//		if D < Bd0 {
+//			continue
+//		}
+//		if D-Bd0 == day.indexInMonth {
+//			l.jqmc = jqmc[xn] //取得节气名称
+//			l.jqjd = d
+//			l.jqsj = timeFromJD(d + float64(J2000))
+//		}
+//
+//		if D+12 >= Bd0+Bdn {
+//			break
+//		}
+//	}
+//}
 
 // 获取农历节日事件
 // 不能直接调用，外部调用使用 updateLunar
@@ -545,4 +727,16 @@ func soHigh(shuo float64) float64 {
 		t = MS_aLon_t(shuo)*36525 - dt_T(t) + 8.0/24
 	}
 	return t
+}
+
+// 精气
+func qi_accurate(W float64) float64 {
+	var t = S_aLon_t(W) * 36525
+	return t - dt_T(t) + 8.0/24
+}
+
+//精朔
+func so_accurate(W float64) float64 {
+	var t = MS_aLon_t(W) * 36525
+	return t - dt_T(t) + 8.0/24
 }

@@ -1,6 +1,7 @@
 package almanac
 
 import (
+	"math"
 	"strconv"
 	"strings"
 )
@@ -48,8 +49,8 @@ type Month struct {
 }
 
 // NewMonth 获取指定的月份
-func NewMonth(year, month int) (m Month) {
-	m = *new(Month)
+func NewMonth(year, month int) (m *Month) {
+	m = new(Month)
 	m.year = year
 	m.month = month
 	m.firstDayTime = Time{year, month, 1, 12, 0, 0}
@@ -79,7 +80,69 @@ func NewMonth(year, month int) (m Month) {
 		var day = newDayWithMonth(m, i, firstDayLunar)
 		m.days = append(m.days, *day)
 	}
+
+	// 月相节气计算
+	m.calcYXJQ()
+
 	return
+}
+
+// 月相和节气的处理
+func (m *Month) calcYXJQ() {
+	var Bd0, Bdn, D, xn int
+	var d, jd2 float64
+
+	Bd0 = m.firstDayJD
+	Bdn = m.daysCount
+	jd2 = float64(Bd0) + dt_T(float64(Bd0)) - 8.0/24
+	//月相查找
+	var w = MS_aLon(jd2/36525, 10, 3)
+	w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
+
+	for {
+		d = so_accurate(w)
+		D = floorInt(d + 0.5)
+		xn = floorInt(w/pi2*4+4000000.01) % 4
+		w += pi2 / 4
+		if D >= Bd0+Bdn {
+			break
+		}
+		if D < Bd0 {
+			continue
+		}
+		var l = &m.days[D-Bd0]
+		l.yxmc = yxmc[xn] //取得月相名称
+		l.yxjd = d
+		l.yxsj = timeFromJD(d + float64(J2000))
+
+		if D+5 >= Bd0+Bdn {
+			break
+		}
+	}
+
+	//节气查找
+	w = S_aLon(jd2/36525, 3)
+	w = math.Floor((w-0.13)/pi2*24) * pi2 / 24
+	for {
+		d = qi_accurate(w)
+		D = floorInt(d + 0.5)
+		xn = floorInt(w/pi2*24+24000006.01) % 24
+		w += pi2 / 24
+		if D >= Bd0+Bdn {
+			break
+		}
+		if D < Bd0 {
+			continue
+		}
+		var l = &m.days[D-Bd0]
+		l.jqmc = jqmc[xn] //取得节气名称
+		l.jqjd = d
+		l.jqsj = timeFromJD(d + float64(J2000))
+
+		if D+12 >= Bd0+Bdn {
+			break
+		}
+	}
 }
 
 // FormatCal 格式化输出公历的月信息，可以作为日历使用

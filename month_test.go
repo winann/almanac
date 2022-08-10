@@ -59,3 +59,10 @@ Sun Mon Tue Wed Thu Fri Sat
 	//	t.Log(day.lunar.Lmc, day.lunar.Ldc)
 	//}
 }
+
+func TestYXJQ(t *testing.T) {
+	var m = NewMonth(2022, 8)
+	for _, d := range m.days {
+		t.Log(d.day, d.lunar.yxmc, d.lunar.yxsj, "---", d.lunar.jqmc, d.lunar.jqsj)
+	}
+}

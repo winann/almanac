@@ -109,9 +109,15 @@ func NewDay(time Time) (d *Day) {
 	d.dynasty = *NewDynastyInfo(time.year)
 
 	// 农历信息
+	var l = &(d.lunar)
 	if firstDayOff < d.ZQ[0] || firstDayOff >= d.ZQ[24] {
-		d.lunar = *(NewLunar(d.jd))
+		l = NewLunar(d.jd)
 	}
+
+	// 月相和节气
+	l.calcYXJQ()
+
+	d.lunar = *l
 
 	//星座
 	var mk = int(float64(d.jd-d.ZQ[0]-15) / 30.43685)
@@ -126,11 +132,12 @@ func NewDay(time Time) (d *Day) {
 
 	// 公历节日
 	d.calcEvents()
+
 	return
 }
 
 // newDayWithMonth 通过传入的月信息和当前第几天获取日对象
-func newDayWithMonth(m Month, i int, l *lunar) (d *Day) {
+func newDayWithMonth(m *Month, i int, l *lunar) (d *Day) {
 	d = new(Day)
 	d.jd = m.firstDayJD + i
 	d.lunar = *l
@@ -164,6 +171,7 @@ func newDayWithMonth(m Month, i int, l *lunar) (d *Day) {
 
 	// 农历信息
 	l.updateLunar(d.jd)
+
 	d.lunar = *l
 
 	//星座

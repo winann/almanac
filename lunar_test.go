@@ -133,3 +133,40 @@ func TestQiHigh(t *testing.T) {
 		t.Error("qiHigh error:", r, ", But expect:", e)
 	}
 }
+
+func TestCalcYXJQ(t *testing.T) {
+	var l = NewLunar(8259)
+	l.calcYXJQ()
+	var time = Time{2022, 8, 12, 9, 35, 43}
+	if l.yxmc != "望" && l.yxsj != time {
+		t.Error(time, "calcYXJQ error：", l)
+	}
+
+	l = NewLunar(2921924)
+	l.calcYXJQ()
+	time = Time{9999, 12, 16, 8, 26, 11}
+	if l.jqmc != "冬至" && l.jqsj != time {
+		t.Error(time, "calcYXJQ error：", l)
+	}
+
+	l = NewLunar(-10)
+	l.calcYXJQ()
+	time = Time{1999, 12, 22, 15, 43, 48}
+	if l.jqmc != "冬至" && l.jqsj != time {
+		t.Error(time, "calcYXJQ error：", l)
+	}
+
+	l = NewLunar(-698128)
+	l.calcYXJQ()
+	time = Time{1999, 12, 22, 16, 45, 56}
+	if l.yxmc != "朔" && l.jqsj != time {
+		t.Error(time, "calcYXJQ error：", l)
+	}
+
+	l = NewLunar(-1095521)
+	l.calcYXJQ()
+	time = Time{-1000, 8, 4, 12, 6, 18}
+	if l.yxmc != "朔" && l.jqsj != time {
+		t.Error(time, "calcYXJQ error：", l)
+	}
+}
