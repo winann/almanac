@@ -103,5 +103,21 @@ func TestCalcHijri(t *testing.T) {
 	if day.Hijri != e {
 		t.Error(time, "calcHijri error:", day.Hijri, ", But expect:", e)
 	}
+}
 
+func TestWeekIndex(t *testing.T) {
+	var day = NewDay(Time{2022, 1, 1, 0, 0, 0})
+	if day.WeekIndexInYear != 0 || day.WeekIndexInMonth != 0 {
+		t.Error(day.Time, " Week Index error:")
+	}
+
+	day = NewDay(Time{2022, 8, 10, 0, 0, 0})
+	if day.WeekIndexInYear != 32 || day.WeekIndexInMonth != 1 {
+		t.Error(day.Time, " Week Index error:")
+	}
+
+	day = NewDay(Time{2022, 12, 31, 0, 0, 0})
+	if day.WeekIndexInYear != 52 || day.WeekIndexInMonth != 4 {
+		t.Error(day.Time, " Week Index error:")
+	}
 }

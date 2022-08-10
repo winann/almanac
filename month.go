@@ -162,9 +162,9 @@ func (m Month) FormatCal() string {
 
 	var weekNum = 0
 	for i, day := range m.Days {
-		if weekNum != day.WeekNumInMonth {
+		if weekNum != day.WeekIndexInMonth {
 			sb.WriteString("\n")
-			weekNum = day.WeekNumInMonth
+			weekNum = day.WeekIndexInMonth
 		}
 		if day.Time.day < 10 {
 			sb.WriteString("  ")

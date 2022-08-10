@@ -41,6 +41,17 @@ func (time Time) getDaysOffJ2000() (daysOff int) {
 }
 
 // 通过 getMonthFirstDay 获取当前日期所在月的月首时间
+func (time Time) getYearFirstDayTime() (firstDayTime Time) {
+	firstDayTime = time
+	firstDayTime.month = 1
+	firstDayTime.day = 1
+	firstDayTime.hour = 12
+	firstDayTime.minute = 0
+	firstDayTime.second = 0
+	return
+}
+
+// 通过 getMonthFirstDay 获取当前日期所在月的月首时间
 func (time Time) getMonthFirstDayTime() (firstDayTime Time) {
 	firstDayTime = time
 	firstDayTime.day = 1

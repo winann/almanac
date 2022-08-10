@@ -30,8 +30,11 @@ type Day struct {
 	// 当前是星期几（周日：0...）
 	Week int
 
-	// 本日所在月的周序号
-	WeekNumInMonth int
+	// 当前所在年的周序号(第一周:0...)
+	WeekIndexInYear int
+
+	// 本日所在月的周序号(第一周:0...)
+	WeekIndexInMonth int
 
 	// 本月的总周数
 	WeekCountInMonth int
@@ -93,9 +96,11 @@ func NewDay(time Time) (d *Day) {
 	// 本日的星期
 	d.Week = (firstWeekday + d.IndexInMonth) % 7
 	// 本日所在月的周序号
-	d.WeekNumInMonth = (firstWeekday + d.IndexInMonth) / 7
+	d.WeekIndexInMonth = (firstWeekday + d.IndexInMonth) / 7
 	// 所在月总周数
 	d.WeekCountInMonth = ((firstWeekday + numberDaysInMonth - 1) / 7) + 1
+	// 获取今天在本年的第几周
+	d.getWeekIndexInYear()
 
 	// 所属公历年对应的农历干支纪年
 	d.ChineseEraDay = time.year - 1984 + 12000
@@ -154,7 +159,7 @@ func newDayWithMonth(m *Month, i int, l *Lunar) (d *Day) {
 	// 本日的星期
 	d.Week = (m.FirstWeekday + d.IndexInMonth) % 7
 	// 本日所在月的周序号
-	d.WeekNumInMonth = (m.FirstWeekday + d.IndexInMonth) / 7
+	d.WeekIndexInMonth = (m.FirstWeekday + d.IndexInMonth) / 7
 	// 所在月总周数
 	d.WeekCountInMonth = m.WeekCount
 
@@ -262,12 +267,12 @@ func (day *Day) calcEvents() {
 	}
 
 	//按周查找
-	var w = day.WeekNumInMonth
+	var w = day.WeekIndexInMonth
 	if day.Week >= day.MonthFirstWeek {
 		w += 1
 	}
 	var w2 = w
-	if day.WeekNumInMonth == day.WeekCountInMonth-1 {
+	if day.WeekIndexInMonth == day.WeekCountInMonth-1 {
 		w2 = 5
 	}
 	var wStr = m0 + strconv.Itoa(w) + strconv.Itoa(day.Week) //d日在本月的第几个星期某
@@ -307,4 +312,12 @@ func (day *Day) calcHijri() {
 	day.HYear = int(z*30 + y + 1)
 	day.HMonth = int(m + 1)
 	day.HDay = int(d + 1)
+}
+
+// getYearFirstDayWeek 获取某一年的第一天是周几
+func (day *Day) getWeekIndexInYear() {
+	var firstDayTime = Time{day.year, 1, 1, 12, 0, 0}
+	var firstDayOff = firstDayTime.getDaysOffJ2000()
+	var yearFirstDayWeek = (firstDayOff + j2000 + 1 + 7000000) % 7
+	day.WeekIndexInYear = (day.jd - firstDayOff + yearFirstDayWeek) / 7
 }
