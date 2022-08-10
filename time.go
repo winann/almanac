@@ -36,7 +36,7 @@ func (time Time) toJulianDay() (jd JulianDay) {
 
 // getDaysOffJ2000 获取当前时间相对于 2000-1-1 的偏移
 func (time Time) getDaysOffJ2000() (daysOff int) {
-	daysOff = int(time.toJulianDay()) - J2000
+	daysOff = int(time.toJulianDay()) - j2000
 	return
 }
 
@@ -68,7 +68,7 @@ func (time Time) getMonthFirstDayInfo() (firstDayOff int, numberDaysInMonth int,
 	var firstDayTime = time.getMonthFirstDayTime()
 	firstDayOff = firstDayTime.getMonthFirstDaysOffJ2000()
 	numberDaysInMonth = firstDayTime.getMonthDaysNum()
-	firstWeekday = (firstDayOff + J2000 + 1 + 7000000) % 7
+	firstWeekday = (firstDayOff + j2000 + 1 + 7000000) % 7
 	return
 }
 

@@ -5,28 +5,28 @@ import (
 	"strconv"
 )
 
-type lunar struct {
-	Lyear     int    // 农历纪年(10进制,1984年起算)
-	Lyear2    string // 干支纪年（立春）
-	Lyear3    string // 干支纪年（春节/正月）
-	Lyear4    int    // 黄帝纪年
-	Lmc       string // 月名称
-	Ldn       int    // 月大小
-	LeapStr   string // 闰月情况（"闰"/""）
-	Lmc2      string // 下个月名称，判断除夕时需要用到
-	Lmonth    int    // 干支纪月
-	LmonthStr string // 干支纪月名称
-	Lday2     string // 干支纪日
+type Lunar struct {
+	Year            int    // 农历纪年(10进制,1984年起算)
+	Year2           string // 干支纪年（立春）
+	Year3           string // 干支纪年（春节/正月）
+	Year4           int    // 黄帝纪年
+	MonthName       string // 月名称
+	MonthDayCount   int    // 月大小
+	LeapStr         string // 闰月情况（"闰"/""）
+	NextMonthName   string // 下个月名称，判断除夕时需要用到
+	MonthGanZhi     int    // 干支纪月
+	MonthGanZhiName string // 干支纪月名称
+	DayGanZhiName   string // 干支纪日
 
-	Ldi  int       // 距农历月首的编移量,0对应初一
-	Ldc  string    // 农历日名称
-	Ljq  string    // 节气名称
-	yxmc string    // 月相名称
-	yxjd JulianDay // 月相时刻(儒略日)
-	yxsj Time      // 月相时间
-	jqmc string    // 定气名称
-	jqjd JulianDay // 节气时刻(儒略日)
-	jqsj Time      // 节气时间
+	IndexInLunarMonth int       // 距农历月首的编移量,0对应初一
+	DayName           string    // 农历日名称
+	solarTermStr      string    // 节气名称
+	phasesOfMoon      string    // 月相名称
+	phasesOfMoonJD    JulianDay // 月相时刻(儒略日)
+	phasesOfMoonTime  Time      // 月相时间
+	solarTerm         string    // 定气名称
+	solarTermJD       JulianDay // 节气时刻(儒略日)
+	solarTermTime     Time      // 节气时间
 
 	CurDZ int // 距冬至的天数
 	CurXZ int // 距夏至的天数
@@ -34,24 +34,24 @@ type lunar struct {
 	CurMZ int // 距芒种的天数
 	CurXS int // 距小暑的天数
 
-	events event // 节日、假期等事件
+	Events Event // 节日、假期等事件
 
 	jd int // 儒略日
 	// 补算二气,确保一年中所有月份的“气”全部被计算在内
 	pe1, pe2 int
 	leap     int        // 闰月位置
-	ZQ       [25]int    // 中气表,其中.liqiu 是节气立秋的儒略日,计算三伏时用到
-	HS       [15]int    // 合朔表
+	zq       [25]int    // 中气表,其中.liqiu 是节气立秋的儒略日,计算三伏时用到
+	hs       [15]int    // 合朔表
 	dx       [14]int    // 各月大小
 	ymc      [14]string // 各月名称
 }
 
-// NewLunar 生成农历排序,  jd 为儒略日相对于 J2000 的偏移
+// NewLunar 生成农历排序,  jd 为儒略日相对于 j2000 的偏移
 // 时间系统全部使用北京时，即使是天象时刻的输出，也是使用北京时
 // 如果天象的输出不使用北京时，会造成显示混乱，更严重的是无法与古历比对
-// 注意：有 lunar 对象之后，建议使用 updateLunar 来更新农历，减少计算次数
-func NewLunar(jd int) (l *lunar) {
-	l = new(lunar)
+// 注意：有 Lunar 对象之后，建议使用 updateLunar 来更新农历，减少计算次数
+func NewLunar(jd int) (l *Lunar) {
+	l = new(Lunar)
 	l.jd = jd
 	l.cal()
 	l.updateLunar(l.jd)
@@ -59,8 +59,8 @@ func NewLunar(jd int) (l *lunar) {
 }
 
 // 排月序(生成实际年历)
-func (l *lunar) cal() {
-	var A, B = &l.ZQ, &l.HS //中气表,日月合朔表(整日)
+func (l *Lunar) cal() {
+	var A, B = &l.zq, &l.hs //中气表,日月合朔表(整日)
 	// 该年的气
 	var W = math.Floor(float64(l.jd-355+183)/365.2422)*365.2422 + 355 // 355是2000.12冬至,得到较靠近jd的冬至估计值
 	if getShuoQiDay(W, true) > l.jd {
@@ -88,12 +88,12 @@ func (l *lunar) cal() {
 	l.leap = 0
 	var ym [14]int
 	for i := 0; i < 14; i++ {
-		l.dx[i] = l.HS[i+1] - l.HS[i] //月大小
+		l.dx[i] = l.hs[i+1] - l.hs[i] //月大小
 		ym[i] = i                     //月序初始化
 	}
 
 	//-721年至-104年的后九月及月建问题,与朔有关，与气无关
-	var YY = floorInt(float64(l.ZQ[0]+10+180)/365.2422) + 2000 //确定年份
+	var YY = floorInt(float64(l.zq[0]+10+180)/365.2422) + 2000 //确定年份
 	if YY >= -721 && YY <= -104 {
 		var ns [9]any
 		var yy int
@@ -101,17 +101,17 @@ func (l *lunar) cal() {
 			yy = YY + i - 1
 			//颁行历年首, 闰月名称, 月建
 			if yy >= -721 { //春秋历,ly为-722.12.17
-				ns[i] = getShuoQiDay(float64(1457698-J2000)+math.Floor(0.342+float64(yy+721)*12.368422)*29.5306, false)
+				ns[i] = getShuoQiDay(float64(1457698-j2000)+math.Floor(0.342+float64(yy+721)*12.368422)*29.5306, false)
 				ns[i+3] = "十三"
 				ns[i+6] = 2
 			}
 			if yy >= -479 { //战国历,ly为-480.12.11
-				ns[i] = getShuoQiDay(float64(1546083-J2000)+math.Floor(0.5+float64(yy+479)*12.368422)*29.5306, false)
+				ns[i] = getShuoQiDay(float64(1546083-j2000)+math.Floor(0.5+float64(yy+479)*12.368422)*29.5306, false)
 				ns[i+3] = "十三"
 				ns[i+6] = 2
 			}
 			if yy >= -220 { //秦汉历,ly为-221.10.31
-				ns[i] = getShuoQiDay(float64(1640641-J2000)+math.Floor(0.866+float64(yy+220)*12.369000)*29.5306, false)
+				ns[i] = getShuoQiDay(float64(1640641-j2000)+math.Floor(0.866+float64(yy+220)*12.369000)*29.5306, false)
 				ns[i+3] = "后九"
 				ns[i+6] = 11
 			}
@@ -120,11 +120,11 @@ func (l *lunar) cal() {
 		for i := 0; i < 14; i++ {
 			for nn = 2; nn >= 0; nn-- {
 				a = ns[nn].(int)
-				if l.HS[i] >= a {
+				if l.hs[i] >= a {
 					break
 				}
 			}
-			f1 := floorInt(float64(l.HS[i]-a+15) / 29.5306) //该月积数
+			f1 := floorInt(float64(l.hs[i]-a+15) / 29.5306) //该月积数
 			if f1 < 12 {
 				n6 := ns[nn+6].(int)
 				l.ymc[i] = ymc[(f1+n6)%12]
@@ -150,7 +150,7 @@ func (l *lunar) cal() {
 
 	//名称转换(月建别名)
 	for i = 0; i < 14; i++ {
-		var Dm = l.HS[i] + J2000
+		var Dm = l.hs[i] + j2000
 		var v2 = ym[i]      //Dm初一的儒略日,v2为月建序号
 		var mc = ymc[v2%12] //月建对应的默认月名称：建子十一,建丑十二,建寅为正……
 		if Dm >= 1724360 && Dm <= 1729794 {
@@ -179,10 +179,10 @@ func (l *lunar) cal() {
 }
 
 // updateLunar 相近月的信息使用此方法更新，无需重新定朔气
-// 如果不在以计算好的范围，则会重新调用 NewLunar 创建 lunar
-func (l *lunar) updateLunar(jd int) {
+// 如果不在以计算好的范围，则会重新调用 NewLunar 创建 Lunar
+func (l *Lunar) updateLunar(jd int) {
 	l.jd = jd
-	if jd < l.ZQ[0] || jd >= l.ZQ[24] {
+	if jd < l.zq[0] || jd >= l.zq[24] {
 		l.cal()
 	}
 
@@ -198,104 +198,104 @@ func (l *lunar) updateLunar(jd int) {
 
 // 计算出给人看的信息
 // 不能直接调用，外部调用使用 updateLunar
-func (l *lunar) calcLunarInfo() {
+func (l *Lunar) calcLunarInfo() {
 	// 农历所在月的序数
-	var mk = floorInt(float64(l.jd-l.HS[0]) / 30)
-	if mk < 13 && l.HS[mk+1] <= l.jd {
+	var mk = floorInt(float64(l.jd-l.hs[0]) / 30)
+	if mk < 13 && l.hs[mk+1] <= l.jd {
 		mk++
 	}
-	l.Ldi = l.jd - l.HS[mk]   //距农历月首的编移量,0对应初一
-	l.Ldc = rmc[l.Ldi]        //农历日名称
-	l.CurDZ = l.jd - l.ZQ[0]  //距冬至的天数
-	l.CurXZ = l.jd - l.ZQ[12] //距夏至的天数
-	l.CurLQ = l.jd - l.ZQ[15] //距立秋的天数
-	l.CurMZ = l.jd - l.ZQ[11] //距芒种的天数
-	l.CurXS = l.jd - l.ZQ[13] //距小暑的天数
+	l.IndexInLunarMonth = l.jd - l.hs[mk] //距农历月首的编移量,0对应初一
+	l.DayName = rmc[l.IndexInLunarMonth]  //农历日名称
+	l.CurDZ = l.jd - l.zq[0]              //距冬至的天数
+	l.CurXZ = l.jd - l.zq[12]             //距夏至的天数
+	l.CurLQ = l.jd - l.zq[15]             //距立秋的天数
+	l.CurMZ = l.jd - l.zq[11]             //距芒种的天数
+	l.CurXS = l.jd - l.zq[13]             //距小暑的天数
 
-	l.Lmc = l.ymc[mk] //月名称
-	l.Ldn = l.dx[mk]  //月大小
+	l.MonthName = l.ymc[mk]    //月名称
+	l.MonthDayCount = l.dx[mk] //月大小
 	if l.leap == mk {
 		l.LeapStr = "闰"
 	} else {
 		l.LeapStr = ""
 	}
 	if mk < 13 {
-		l.Lmc2 = l.ymc[mk+1]
+		l.NextMonthName = l.ymc[mk+1]
 	} else {
-		l.Lmc2 = "未知"
+		l.NextMonthName = "未知"
 	}
 
 	// 节气的取值范围是0-23
-	var qk = floorInt(float64(l.jd-l.ZQ[0]-7) / 15.2184)
-	if qk < 23 && l.jd >= l.ZQ[qk+1] {
+	var qk = floorInt(float64(l.jd-l.zq[0]-7) / 15.2184)
+	if qk < 23 && l.jd >= l.zq[qk+1] {
 		qk++
 	}
-	if l.jd == l.ZQ[qk] {
-		l.Ljq = jqmc[qk]
+	if l.jd == l.zq[qk] {
+		l.solarTermStr = jqmc[qk]
 	} else {
-		l.Ljq = ""
+		l.solarTermStr = ""
 	}
 
 	//干支纪年处理
 	//以立春为界定年首
 	var D float64
-	if l.jd < l.ZQ[3] {
-		D = float64(l.ZQ[3]) - 365 + 365.25*16 - 35
+	if l.jd < l.zq[3] {
+		D = float64(l.zq[3]) - 365 + 365.25*16 - 35
 	} else {
-		D = float64(l.ZQ[3]) + 365.25*16 - 35
+		D = float64(l.zq[3]) + 365.25*16 - 35
 	}
 
-	l.Lyear = floorInt(D/365.2422 + 0.5) //农历纪年(10进制,1984年起算)
+	l.Year = floorInt(D/365.2422 + 0.5) //农历纪年(10进制,1984年起算)
 	//以下几行以正月初一定年首
-	D = float64(l.HS[2])      //一般第3个月为春节
+	D = float64(l.hs[2])      //一般第3个月为春节
 	for j := 0; j < 14; j++ { //找春节
 		if l.ymc[j] != "正" || l.leap == j && j > 0 {
 			continue
 		}
-		D = float64(l.HS[j])
+		D = float64(l.hs[j])
 		if float64(l.jd) < D {
 			D -= 365
 			break
 		} //无需再找下一个正月
 	}
-	D = D + 5810                            //计算该年春节与1984年平均春节(立春附近)相差天数估计
-	var lyear0 = floorInt(D/365.2422 + 0.5) //农历纪年(10进制,1984年起算)
+	D = D + 5810                           //计算该年春节与1984年平均春节(立春附近)相差天数估计
+	var year0 = floorInt(D/365.2422 + 0.5) //农历纪年(10进制,1984年起算)
 
-	D = float64(l.Lyear + 12000)
-	l.Lyear2 = gan[int(D)%10] + zhi[int(D)%12] //干支纪年(立春)
-	D = float64(lyear0 + 12000)
-	l.Lyear3 = gan[int(D)%10] + zhi[int(D)%12] //干支纪年(正月)
-	l.Lyear4 = lyear0 + 1984 + 2698            //黄帝纪年
+	D = float64(l.Year + 12000)
+	l.Year2 = gan[int(D)%10] + zhi[int(D)%12] //干支纪年(立春)
+	D = float64(year0 + 12000)
+	l.Year3 = gan[int(D)%10] + zhi[int(D)%12] //干支纪年(正月)
+	l.Year4 = year0 + 1984 + 2698             //黄帝纪年
 
 	//纪月处理,1998年12月7(大雪)开始连续进行节气计数,0为甲子
-	mk = floorInt(float64(l.jd-l.ZQ[0]) / 30.43685)
+	mk = floorInt(float64(l.jd-l.zq[0]) / 30.43685)
 	//相对大雪的月数计算,mk的取值范围0-12
-	if mk < 12 && l.jd >= l.ZQ[2*mk+1] {
+	if mk < 12 && l.jd >= l.zq[2*mk+1] {
 		mk++
 	}
 
-	D = float64(mk + floorInt(float64(l.ZQ[12]+390)/365.2422)*12 + 900000) //相对于1998年12月7(大雪)的月数,900000为正数基数
-	l.Lmonth = int(D) % 12
-	l.LmonthStr = gan[int(D)%10] + zhi[int(D)%12]
+	D = float64(mk + floorInt(float64(l.zq[12]+390)/365.2422)*12 + 900000) //相对于1998年12月7(大雪)的月数,900000为正数基数
+	l.MonthGanZhi = int(D) % 12
+	l.MonthGanZhiName = gan[int(D)%10] + zhi[int(D)%12]
 
 	//纪日,2000年1月7日起算
 	var dInt = l.jd - 6 + 9000000
-	l.Lday2 = gan[dInt%10] + zhi[dInt%12]
+	l.DayGanZhiName = gan[dInt%10] + zhi[dInt%12]
 }
 
 // 月相和节气的处理，需要自己调用
-func (l *lunar) calcYXJQ() {
-	var jd = float64(l.jd) + dt_T(float64(l.jd)) - 8.0/24
+func (l *Lunar) calcYXJQ() {
+	var jd = float64(l.jd) + dtT(float64(l.jd)) - 8.0/24
 	////月相查找
-	var w = MS_aLon(jd/36525, 10, 3)
+	var w = MsALon(jd/36525, 10, 3)
 	w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
 	var d float64
 	var D, xn int
-	l.yxmc = ""
-	l.yxjd = 0
-	l.yxsj = Time{}
+	l.phasesOfMoon = ""
+	l.phasesOfMoonJD = 0
+	l.phasesOfMoonTime = Time{}
 	for {
-		d = so_accurate(w)
+		d = soAccurate(w)
 		D = floorInt(d + 0.5)
 		xn = floorInt(w/pi2*4+4000000.01) % 4
 		w += pi2 / 4
@@ -306,22 +306,22 @@ func (l *lunar) calcYXJQ() {
 		if D < l.jd {
 			continue
 		}
-		l.yxmc = yxmc[xn] //取得月相名称
-		l.yxjd = d
-		l.yxsj = timeFromJD(d + float64(J2000))
+		l.phasesOfMoon = yxmc[xn] //取得月相名称
+		l.phasesOfMoonJD = d
+		l.phasesOfMoonTime = timeFromJD(d + float64(j2000))
 		if D+5 >= l.jd {
 			break
 		}
 	}
 
 	//节气查找
-	l.jqmc = ""
-	l.jqjd = 0
-	l.jqsj = Time{}
-	w = S_aLon(jd/36525, 3)
+	l.solarTerm = ""
+	l.solarTermJD = 0
+	l.solarTermTime = Time{}
+	w = sALon(jd/36525, 3)
 	w = math.Floor((w-0.13)/pi2*24) * pi2 / 24
 	for {
-		d = qi_accurate(w)
+		d = qiAccurate(w)
 		D = floorInt(d + 0.5)
 		xn = floorInt(w/pi2*24+24000006.01) % 24
 		w += pi2 / 24
@@ -331,9 +331,9 @@ func (l *lunar) calcYXJQ() {
 		if D < l.jd {
 			continue
 		}
-		l.jqmc = jqmc[xn] //取得节气名称
-		l.jqjd = d
-		l.jqsj = timeFromJD(d + float64(J2000))
+		l.solarTerm = jqmc[xn] //取得节气名称
+		l.solarTermJD = d
+		l.solarTermTime = timeFromJD(d + float64(j2000))
 
 		if D+12 >= l.jd {
 			break
@@ -343,13 +343,13 @@ func (l *lunar) calcYXJQ() {
 	//var Bd0, Bdn, D, xn int
 	//var d, jd2 float64
 	//if day == nil {
-	//	day = NewDay(timeFromJD(float64(l.jd + J2000)))
+	//	day = NewDay(timeFromJD(float64(l.jd + j2000)))
 	//}
 	//Bd0 = day.getMonthFirstDaysOffJ2000()
-	//Bdn = day.monthDaysCount
-	//jd2 = float64(Bd0) + dt_T(float64(Bd0)) - 8.0/24
+	//Bdn = day.MonthDaysCount
+	//jd2 = float64(Bd0) + dtT(float64(Bd0)) - 8.0/24
 	////月相查找
-	//var w = MS_aLon(jd2/36525, 10, 3)
+	//var w = MsALon(jd2/36525, 10, 3)
 	//w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
 	//
 	//for {
@@ -363,10 +363,10 @@ func (l *lunar) calcYXJQ() {
 	//	if D < Bd0 {
 	//		continue
 	//	}
-	//	if D-Bd0 == day.indexInMonth {
-	//		l.yxmc = yxmc[xn] //取得月相名称
-	//		l.yxjd = d
-	//		l.yxsj = timeFromJD(d + float64(J2000))
+	//	if D-Bd0 == day.IndexInMonth {
+	//		l.phasesOfMoon = phasesOfMoon[xn] //取得月相名称
+	//		l.phasesOfMoonJD = d
+	//		l.phasesOfMoonTime = timeFromJD(d + float64(j2000))
 	//	}
 	//
 	//	if D+5 >= Bd0+Bdn {
@@ -375,7 +375,7 @@ func (l *lunar) calcYXJQ() {
 	//}
 	//
 	////节气查找
-	//w = S_aLon(jd2/36525, 3)
+	//w = sALon(jd2/36525, 3)
 	//w = math.Floor((w-0.13)/pi2*24) * pi2 / 24
 	//for {
 	//	d = qi_accurate(w)
@@ -388,10 +388,10 @@ func (l *lunar) calcYXJQ() {
 	//	if D < Bd0 {
 	//		continue
 	//	}
-	//	if D-Bd0 == day.indexInMonth {
-	//		l.jqmc = jqmc[xn] //取得节气名称
-	//		l.jqjd = d
-	//		l.jqsj = timeFromJD(d + float64(J2000))
+	//	if D-Bd0 == day.IndexInMonth {
+	//		l.solarTerm = solarTerm[xn] //取得节气名称
+	//		l.solarTermJD = d
+	//		l.solarTermTime = timeFromJD(d + float64(j2000))
 	//	}
 	//
 	//	if D+12 >= Bd0+Bdn {
@@ -401,17 +401,17 @@ func (l *lunar) calcYXJQ() {
 }
 
 //// 月相和节气的处理
-//func (l *lunar) calcYXJQ(day *Day) {
+//func (l *Lunar) calcYXJQ(day *Day) {
 //	var Bd0, Bdn, D, xn int
 //	var d, jd2 float64
 //	if day == nil {
-//		day = NewDay(timeFromJD(float64(l.jd + J2000)))
+//		day = NewDay(timeFromJD(float64(l.jd + j2000)))
 //	}
 //	Bd0 = day.getMonthFirstDaysOffJ2000()
-//	Bdn = day.monthDaysCount
-//	jd2 = float64(Bd0) + dt_T(float64(Bd0)) - 8.0/24
+//	Bdn = day.MonthDaysCount
+//	jd2 = float64(Bd0) + dtT(float64(Bd0)) - 8.0/24
 //	//月相查找
-//	var w = MS_aLon(jd2/36525, 10, 3)
+//	var w = MsALon(jd2/36525, 10, 3)
 //	w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
 //
 //	for {
@@ -425,10 +425,10 @@ func (l *lunar) calcYXJQ() {
 //		if D < Bd0 {
 //			continue
 //		}
-//		if D-Bd0 == day.indexInMonth {
-//			l.yxmc = yxmc[xn] //取得月相名称
-//			l.yxjd = d
-//			l.yxsj = timeFromJD(d + float64(J2000))
+//		if D-Bd0 == day.IndexInMonth {
+//			l.phasesOfMoon = phasesOfMoon[xn] //取得月相名称
+//			l.phasesOfMoonJD = d
+//			l.phasesOfMoonTime = timeFromJD(d + float64(j2000))
 //		}
 //
 //		if D+5 >= Bd0+Bdn {
@@ -437,7 +437,7 @@ func (l *lunar) calcYXJQ() {
 //	}
 //
 //	//节气查找
-//	w = S_aLon(jd2/36525, 3)
+//	w = sALon(jd2/36525, 3)
 //	w = math.Floor((w-0.13)/pi2*24) * pi2 / 24
 //	for {
 //		d = qi_accurate(w)
@@ -450,10 +450,10 @@ func (l *lunar) calcYXJQ() {
 //		if D < Bd0 {
 //			continue
 //		}
-//		if D-Bd0 == day.indexInMonth {
-//			l.jqmc = jqmc[xn] //取得节气名称
-//			l.jqjd = d
-//			l.jqsj = timeFromJD(d + float64(J2000))
+//		if D-Bd0 == day.IndexInMonth {
+//			l.solarTerm = solarTerm[xn] //取得节气名称
+//			l.solarTermJD = d
+//			l.solarTermTime = timeFromJD(d + float64(j2000))
 //		}
 //
 //		if D+12 >= Bd0+Bdn {
@@ -464,126 +464,126 @@ func (l *lunar) calcYXJQ() {
 
 // 获取农历节日事件
 // 不能直接调用，外部调用使用 updateLunar
-func (l *lunar) calcLunarEvents() {
-	l.events = *new(event)
+func (l *Lunar) calcLunarEvents() {
+	l.Events = *new(Event)
 	//按农历日期查找重量点节假日
-	var d = l.Lmc
+	var d = l.MonthName
 	if len([]rune(d)) < 2 {
 		d += "月"
 	}
-	d += l.Ldc
+	d += l.DayName
 	if l.LeapStr != "闰" {
 		if d == "正月初一" {
-			l.events.festival = append(l.events.festival, "春节")
+			l.Events.festival = append(l.Events.festival, "春节")
 		}
 		if d == "正月初二" {
-			l.events.important = append(l.events.festival, "大年初二")
+			l.Events.important = append(l.Events.festival, "大年初二")
 		}
 		if d == "正月初六" {
-			l.events.other = append(l.events.other, "送穷日")
+			l.Events.other = append(l.Events.other, "送穷日")
 		}
 		if d == "五月初五" {
-			l.events.festival = append(l.events.festival, "端午节")
+			l.Events.festival = append(l.Events.festival, "端午节")
 		}
 		if d == "八月十五" {
-			l.events.festival = append(l.events.festival, "中秋节")
+			l.Events.festival = append(l.Events.festival, "中秋节")
 		}
 		if d == "正月十五" {
-			l.events.festival = append(l.events.festival, "元宵节")
-			l.events.important = append(l.events.important, "上元节")
-			l.events.other = append(l.events.other, "壮族歌墟节", "苗族踩山节", "达斡尔族卡钦")
+			l.Events.festival = append(l.Events.festival, "元宵节")
+			l.Events.important = append(l.Events.important, "上元节")
+			l.Events.other = append(l.Events.other, "壮族歌墟节", "苗族踩山节", "达斡尔族卡钦")
 		}
 		if d == "正月十六" {
-			l.events.other = append(l.events.other, "侗族芦笙节(至正月二十)")
+			l.Events.other = append(l.Events.other, "侗族芦笙节(至正月二十)")
 		}
 		if d == "正月廿五" {
-			l.events.other = append(l.events.other, "填仓节")
+			l.Events.other = append(l.Events.other, "填仓节")
 		}
 
 		if d == "二月初一" {
-			l.events.other = append(l.events.other, "瑶族忌鸟节")
+			l.Events.other = append(l.Events.other, "瑶族忌鸟节")
 		}
 		if d == "二月初二" {
-			l.events.important = append(l.events.important, "春龙节(龙抬头)")
-			l.events.other = append(l.events.other, "畲族会亲节")
+			l.Events.important = append(l.Events.important, "春龙节(龙抬头)")
+			l.Events.other = append(l.Events.other, "畲族会亲节")
 		}
 		if d == "二月初八" {
-			l.events.other = append(l.events.other, "傈傈族刀杆节")
+			l.Events.other = append(l.Events.other, "傈傈族刀杆节")
 		}
 		if d == "三月初三" {
-			l.events.important = append(l.events.important, "北帝诞")
-			l.events.other = append(l.events.other, "苗族黎族歌墟节")
+			l.Events.important = append(l.Events.important, "北帝诞")
+			l.Events.other = append(l.Events.other, "苗族黎族歌墟节")
 		}
 		if d == "三月十五" {
-			l.events.other = append(l.events.other, "白族三月街(至三月二十)")
+			l.Events.other = append(l.Events.other, "白族三月街(至三月二十)")
 		}
 		if d == "三月廿三" {
-			l.events.important = append(l.events.important, "天后诞", "妈祖诞")
+			l.Events.important = append(l.Events.important, "天后诞", "妈祖诞")
 		}
 		if d == "四月初八" {
-			l.events.important = append(l.events.important, "牛王诞")
+			l.Events.important = append(l.Events.important, "牛王诞")
 		}
 		if d == "四月十八" {
-			l.events.other = append(l.events.other, "锡伯族西迁节")
+			l.Events.other = append(l.Events.other, "锡伯族西迁节")
 		}
 		if d == "五月十三" {
-			l.events.important = append(l.events.important, "关帝诞")
-			l.events.other = append(l.events.other, "阿昌族泼水节")
+			l.Events.important = append(l.Events.important, "关帝诞")
+			l.Events.other = append(l.Events.other, "阿昌族泼水节")
 		}
 		if d == "五月廿二" {
-			l.events.other = append(l.events.other, "鄂温克族米阔鲁节")
+			l.Events.other = append(l.Events.other, "鄂温克族米阔鲁节")
 		}
 		if d == "五月廿九" {
-			l.events.other = append(l.events.other, "瑶族达努节")
+			l.Events.other = append(l.Events.other, "瑶族达努节")
 		}
 		if d == "六月初六" {
-			l.events.important = append(l.events.important, "姑姑节", "天贶节")
-			l.events.other = append(l.events.other, "壮族祭田节", "瑶族尝新节")
+			l.Events.important = append(l.Events.important, "姑姑节", "天贶节")
+			l.Events.other = append(l.Events.other, "壮族祭田节", "瑶族尝新节")
 		}
 		if d == "六月廿四" {
-			l.events.other = append(l.events.other, "火把节、星回节(彝、白、佤、阿昌、纳西、基诺族)")
+			l.Events.other = append(l.Events.other, "火把节、星回节(彝、白、佤、阿昌、纳西、基诺族)")
 		}
 		if d == "七月初七" {
-			l.events.important = append(l.events.important, "七夕(中国情人节,乞巧节,女儿节)")
+			l.Events.important = append(l.Events.important, "七夕(中国情人节,乞巧节,女儿节)")
 		}
 		if d == "七月十三" {
-			l.events.other = append(l.events.other, "侗族吃新节")
+			l.Events.other = append(l.Events.other, "侗族吃新节")
 		}
 		if d == "七月十五" {
-			l.events.important = append(l.events.important, "中元节、鬼节")
+			l.Events.important = append(l.Events.important, "中元节、鬼节")
 		}
 		if d == "九月初九" {
-			l.events.important = append(l.events.important, "重阳节")
+			l.Events.important = append(l.Events.important, "重阳节")
 		}
 		if d == "十月初一" {
-			l.events.important = append(l.events.important, "祭祖节(十月朝)")
+			l.Events.important = append(l.Events.important, "祭祖节(十月朝)")
 		}
 		if d == "十月十五" {
-			l.events.important = append(l.events.important, "下元节")
+			l.Events.important = append(l.Events.important, "下元节")
 		}
 		if d == "十月十六" {
-			l.events.other = append(l.events.other, "瑶族盘王节")
+			l.Events.other = append(l.Events.other, "瑶族盘王节")
 		}
 		if d == "十二初八" {
-			l.events.important = append(l.events.important, "腊八节")
+			l.Events.important = append(l.Events.important, "腊八节")
 		}
 	}
-	if l.Lmc2 == "正" { //最后一月
-		if d == "十二三十" && l.Ldn == 30 {
-			l.events.festival = append(l.events.festival, "除夕")
+	if l.NextMonthName == "正" { //最后一月
+		if d == "十二三十" && l.MonthDayCount == 30 {
+			l.Events.festival = append(l.Events.festival, "除夕")
 		}
-		if d == "十二廿九" && l.Ldn == 29 {
-			l.events.festival = append(l.events.festival, "除夕")
+		if d == "十二廿九" && l.MonthDayCount == 29 {
+			l.Events.festival = append(l.Events.festival, "除夕")
 		}
 		if d == "十二廿三" {
-			l.events.important = append(l.events.important, "北方小年")
+			l.Events.important = append(l.Events.important, "北方小年")
 		}
 		if d == "十二廿四" {
-			l.events.important = append(l.events.important, "南方小年")
+			l.Events.important = append(l.Events.important, "南方小年")
 		}
 	}
-	if l.Ljq != "" {
-		l.events.important = append(l.events.important, l.Ljq)
+	if l.solarTermStr != "" {
+		l.Events.important = append(l.Events.important, l.solarTermStr)
 	}
 
 	//农历杂节
@@ -591,34 +591,34 @@ func (l *lunar) calcLunarEvents() {
 	if l.CurDZ >= 0 && l.CurDZ < 81 { //数九
 		w = numCn[l.CurDZ/9+1]
 		if l.CurDZ%9 == 0 {
-			l.events.important = append(l.events.important, w+"九")
+			l.Events.important = append(l.Events.important, w+"九")
 		} else {
-			l.events.other = append(l.events.other, w+"九第"+strconv.Itoa(l.CurDZ%9+1)+"天")
+			l.Events.other = append(l.Events.other, w+"九第"+strconv.Itoa(l.CurDZ%9+1)+"天")
 		}
 	}
 
-	w = string([]rune(l.Lday2)[0])
-	w2 = string([]rune(l.Lday2)[1])
+	w = string([]rune(l.DayGanZhiName)[0])
+	w2 = string([]rune(l.DayGanZhiName)[1])
 	if l.CurXZ >= 20 && l.CurXZ < 30 && w == "庚" {
-		l.events.important = append(l.events.important, "初伏")
+		l.Events.important = append(l.Events.important, "初伏")
 	}
 	if l.CurXZ >= 30 && l.CurXZ < 40 && w == "庚" {
-		l.events.important = append(l.events.important, "中伏")
+		l.Events.important = append(l.Events.important, "中伏")
 	}
 	if l.CurLQ >= 0 && l.CurLQ < 10 && w == "庚" {
-		l.events.important = append(l.events.important, "末伏")
+		l.Events.important = append(l.Events.important, "末伏")
 	}
 	if l.CurMZ >= 0 && l.CurMZ < 10 && w == "丙" {
-		l.events.important = append(l.events.important, "入梅")
+		l.Events.important = append(l.Events.important, "入梅")
 	}
 	if l.CurXS >= 0 && l.CurXS < 12 && w2 == "未" {
-		l.events.important = append(l.events.important, "出梅")
+		l.Events.important = append(l.Events.important, "出梅")
 	}
 }
 
 // jd 应靠近所要取得的气朔日,isQi 表示是否为'气'，为'气'时算节气的儒略日
 func getShuoQiDay(jd float64, isQi bool) int {
-	jd += float64(J2000)
+	jd += float64(j2000)
 	var kb = shuoKB[0:]
 	var pc = 14.0
 	if isQi {
@@ -650,7 +650,7 @@ func getShuoQiDay(jd float64, isQi bool) int {
 		if dInt == 1683460 {
 			dInt++
 		}
-		return dInt - J2000
+		return dInt - j2000
 	}
 	if jd >= f2 && jd < f3 { //定气或定朔
 		var D int
@@ -709,34 +709,34 @@ func qiLow(qi float64) float64 {
 
 // 较高精度气
 func qiHigh(qi float64) float64 {
-	var t = S_aLon_t2(qi) * 36525
-	t = t - dt_T(t) + 8.0/24
+	var t = sALonT2(qi) * 36525
+	t = t - dtT(t) + 8.0/24
 	var v = math.Mod(t+0.5, 1.0) * 86400
 	if v < 1200 || v > 86400-1200 {
-		t = S_aLon_t(qi)*36525 - dt_T(t) + 8.0/24
+		t = sALonT(qi)*36525 - dtT(t) + 8.0/24
 	}
 	return t
 }
 
 // 较高精度朔
 func soHigh(shuo float64) float64 {
-	var t = MS_aLon_t2(shuo) * 36525
-	t = t - dt_T(t) + 8.0/24
+	var t = msALonT2(shuo) * 36525
+	t = t - dtT(t) + 8.0/24
 	var v = math.Mod(t+0.5, 1) * 86400
 	if v < 1800 || v > 86400-1800 {
-		t = MS_aLon_t(shuo)*36525 - dt_T(t) + 8.0/24
+		t = msALonT(shuo)*36525 - dtT(t) + 8.0/24
 	}
 	return t
 }
 
 // 精气
-func qi_accurate(W float64) float64 {
-	var t = S_aLon_t(W) * 36525
-	return t - dt_T(t) + 8.0/24
+func qiAccurate(W float64) float64 {
+	var t = sALonT(W) * 36525
+	return t - dtT(t) + 8.0/24
 }
 
 //精朔
-func so_accurate(W float64) float64 {
-	var t = MS_aLon_t(W) * 36525
-	return t - dt_T(t) + 8.0/24
+func soAccurate(W float64) float64 {
+	var t = msALonT(W) * 36525
+	return t - dtT(t) + 8.0/24
 }

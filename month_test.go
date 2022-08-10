@@ -35,8 +35,8 @@ Sun Mon Tue Wed Thu Fri Sat
 		t.Error(month, "\nmonth.FormatCal error:", r, "\nBut Expect:", e)
 	}
 	//
-	//for _, day := range month.days {
-	//	t.Log(day.lunar.LeapStr, day.lunar.Lmc, day.lunar.Ldc)
+	//for _, day := range Month.Days {
+	//	t.Log(day.Lunar.LeapStr, day.Lunar.MonthName, day.Lunar.DayName)
 	//}
 
 	month = NewMonth(-1000, 9)
@@ -55,14 +55,14 @@ Sun Mon Tue Wed Thu Fri Sat
 		t.Error(month, "\nmonth.FormatCal error:", r, "\nBut Expect:", e)
 	}
 
-	//for _, day := range month.days {
-	//	t.Log(day.lunar.Lmc, day.lunar.Ldc)
+	//for _, day := range Month.Days {
+	//	t.Log(day.Lunar.MonthName, day.Lunar.DayName)
 	//}
 }
 
 func TestYXJQ(t *testing.T) {
 	var m = NewMonth(2022, 8)
-	for _, d := range m.days {
-		t.Log(d.day, d.lunar.yxmc, d.lunar.yxsj, "---", d.lunar.jqmc, d.lunar.jqsj)
+	if m.Days[4].phasesOfMoon != "上弦" {
+		t.Error("calYXJQ error:", m.Days[5])
 	}
 }

@@ -19,9 +19,9 @@ func julianDay(year, month int, day JulianDay) (jd JulianDay) {
 		year--
 	}
 	if isGregorian {
-		n = int(year / 100)
+		n = year / 100
 		//加百年闰
-		n = 2 - n + int(n/4)
+		n = 2 - n + n/4
 	}
 	jd = math.Floor(365.25*float64(year+4716)) + math.Floor(30.6001*float64(month+1)) + day + float64(n) - 1524.5
 	return
@@ -36,7 +36,7 @@ func timeFromJD(julianDay JulianDay) (time Time) {
 	var c int
 	if i >= 2299161 {
 		c = int((float64(i) - 1867216.25) / 36524.25)
-		i += 1 + c - int(c/4)
+		i += 1 + c - c/4
 	}
 	i += 1524
 
@@ -66,8 +66,14 @@ func timeFromJD(julianDay JulianDay) (time Time) {
 	time.minute = int(f)
 	// 秒
 	f -= float64(time.minute)
-	f *= 60
-	time.second = floorInt(f + 0.5)
+	if isEqual(1, f) {
+		time.second = 0
+		time.minute += 1
+	} else {
+		f *= 60
+		time.second = int(f)
+	}
+
 	return
 }
 
@@ -96,23 +102,23 @@ func timeFromJD(julianDay JulianDay) (time Time) {
 //	fi = fi.SetInt(bi)
 //
 //	y := fi.Sub(fi, big.NewFloat(122.1))
-//	year, _ := y.Quo(y, big.NewFloat(365.25)).Int64()
-//	Time.year = int(year)
-//	offSet, _ := new(big.Float).Mul(big.NewFloat(365.25), new(big.Float).SetInt64(year)).Int(nil)
+//	Year, _ := y.Quo(y, big.NewFloat(365.25)).Int64()
+//	Time.Year = int(Year)
+//	offSet, _ := new(big.Float).Mul(big.NewFloat(365.25), new(big.Float).SetInt64(Year)).Int(nil)
 //	bi = bi.Sub(bi, offSet)
-//	month, _ := new(big.Float).SetInt(bi).Quo(new(big.Float).SetInt(bi), big.NewFloat(30.601)).Int64()
-//	Time.month = int(month)
-//	offSet, _ = new(big.Float).Mul(big.NewFloat(30.601), new(big.Float).SetInt64(month)).Int(nil)
+//	Month, _ := new(big.Float).SetInt(bi).Quo(new(big.Float).SetInt(bi), big.NewFloat(30.601)).Int64()
+//	Time.Month = int(Month)
+//	offSet, _ = new(big.Float).Mul(big.NewFloat(30.601), new(big.Float).SetInt64(Month)).Int(nil)
 //	bi = bi.Sub(bi, offSet)
 //	Day := bi.Int64()
 //	Time.Day = int(Day)
 //
-//	if Time.month > 13 {
-//		Time.month -= 13
-//		Time.year -= 4715
+//	if Time.Month > 13 {
+//		Time.Month -= 13
+//		Time.Year -= 4715
 //	} else {
-//		Time.month -= 1
-//		Time.year -= 4716
+//		Time.Month -= 1
+//		Time.Year -= 4716
 //	}
 //
 //	//// 日的小数转化为时分秒

@@ -7,61 +7,61 @@ import (
 func TestNewDay(t *testing.T) {
 	var time = Time{-1000, 12, 30, 14, 0, 0}
 	var day = NewDay(time)
-	if day.monthFirstWeek != 6 ||
-		day.monthDaysCount != 31 ||
+	if day.MonthFirstWeek != 6 ||
+		day.MonthDaysCount != 31 ||
 		day.GetZodiacName() != "摩羯座" ||
 		day.GetChineseZodiacName() != "龙" ||
 		day.GetGanName() != "庚" ||
 		day.GetZhiName() != "辰" ||
-		day.mark != "康王" {
+		day.Mark != "康王" {
 		t.Error(day)
 	}
 
 	time = Time{1582, 10, 4, 14, 0, 0}
 	day = NewDay(time)
-	if day.monthFirstWeek != 1 ||
-		day.monthDaysCount != 21 ||
+	if day.MonthFirstWeek != 1 ||
+		day.MonthDaysCount != 21 ||
 		day.GetZodiacName() != "天秤座" ||
 		day.GetChineseZodiacName() != "马" ||
 		day.GetGanName() != "壬" ||
 		day.GetZhiName() != "午" ||
-		day.mark != "神宗" {
+		day.Mark != "神宗" {
 		t.Error(day)
 	}
 
 	time = Time{1582, 10, 22, 14, 0, 0}
 	day = NewDay(time)
-	if day.monthFirstWeek != 1 ||
-		day.monthDaysCount != 21 ||
+	if day.MonthFirstWeek != 1 ||
+		day.MonthDaysCount != 21 ||
 		day.GetZodiacName() != "天蝎座" ||
 		day.GetChineseZodiacName() != "马" ||
 		day.GetGanName() != "壬" ||
 		day.GetZhiName() != "午" ||
-		day.mark != "神宗" {
+		day.Mark != "神宗" {
 		t.Error(day)
 	}
 
 	time = Time{2022, 8, 5, 14, 0, 0}
 	day = NewDay(time)
-	if day.monthFirstWeek != 1 ||
-		day.monthDaysCount != 31 ||
+	if day.MonthFirstWeek != 1 ||
+		day.MonthDaysCount != 31 ||
 		day.GetZodiacName() != "狮子座" ||
 		day.GetChineseZodiacName() != "虎" ||
 		day.GetGanName() != "壬" ||
 		day.GetZhiName() != "寅" ||
-		day.mark != "中国" {
+		day.Mark != "中国" {
 		t.Error(day)
 	}
 
 	time = Time{9999, 12, 31, 14, 0, 0}
 	day = NewDay(time)
-	if day.monthFirstWeek != 3 ||
-		day.monthDaysCount != 31 ||
+	if day.MonthFirstWeek != 3 ||
+		day.MonthDaysCount != 31 ||
 		day.GetZodiacName() != "摩羯座" ||
 		day.GetChineseZodiacName() != "猪" ||
 		day.GetGanName() != "己" ||
 		day.GetZhiName() != "亥" ||
-		day.mark != "中国" {
+		day.Mark != "中国" {
 		t.Error(day)
 	}
 

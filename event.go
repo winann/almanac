@@ -1,7 +1,7 @@
 package almanac
 
-// 上班/放假事件
-type event struct {
+// Event 上班/放假事件
+type Event struct {
 	festival  []string // 重要喜庆日子名称(可将日子名称置红)
 	important []string // 重要日子名称
 	other     []string // 非重要、喜庆日子名称
