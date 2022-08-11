@@ -96,7 +96,7 @@ func (m *Month) calcYXJQ() {
 	Bdn = m.DaysCount
 	jd2 = float64(Bd0) + dtT(float64(Bd0)) - 8.0/24
 	//月相查找
-	var w = MsALon(jd2/36525, 10, 3)
+	var w = msALon(jd2/36525, 10, 3)
 	w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
 
 	for {

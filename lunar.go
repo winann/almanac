@@ -6,44 +6,97 @@ import (
 )
 
 type Lunar struct {
-	Year            int    // 农历纪年(10进制,1984年起算)
-	Year2           string // 干支纪年（立春）
-	Year3           string // 干支纪年（春节/正月）
-	Year4           int    // 黄帝纪年
-	MonthName       string // 月名称
-	MonthDayCount   int    // 月大小
-	LeapStr         string // 闰月情况（"闰"/""）
-	NextMonthName   string // 下个月名称，判断除夕时需要用到
-	MonthGanZhi     int    // 干支纪月
-	MonthGanZhiName string // 干支纪月名称
-	DayGanZhiName   string // 干支纪日
+	// 农历纪年(10进制,1984年起算)
+	Year int
 
-	IndexInLunarMonth int       // 距农历月首的编移量,0对应初一
-	DayName           string    // 农历日名称
-	solarTermStr      string    // 节气名称
-	phasesOfMoon      string    // 月相名称
-	phasesOfMoonJD    JulianDay // 月相时刻(儒略日)
-	phasesOfMoonTime  Time      // 月相时间
-	solarTerm         string    // 定气名称
-	solarTermJD       JulianDay // 节气时刻(儒略日)
-	solarTermTime     Time      // 节气时间
+	// 干支纪年（立春）
+	Year2 string
 
-	CurDZ int // 距冬至的天数
-	CurXZ int // 距夏至的天数
-	CurLQ int // 距立秋的天数
-	CurMZ int // 距芒种的天数
-	CurXS int // 距小暑的天数
+	// 干支纪年（春节/正月）
+	Year3 string
 
-	Events Event // 节日、假期等事件
+	// 黄帝纪年
+	Year4 int
+
+	// 月名称
+	MonthName string
+
+	// 月大小
+	MonthDayCount int
+
+	// 闰月情况（"闰"/""）
+	LeapStr string
+
+	// 下个月名称，判断除夕时需要用到
+	NextMonthName string
+
+	// 干支纪月
+	MonthGanZhi int
+
+	// 干支纪月名称
+	MonthGanZhiName string
+
+	// 干支纪日
+	DayGanZhiName string
+
+	// 距农历月首的编移量,0对应初一
+	IndexInLunarMonth int
+
+	// 农历日名称
+	DayName string
+
+	// 节气名称
+	solarTermStr string
+
+	// 月相名称
+	phasesOfMoon string
+
+	// 月相时刻(儒略日)
+	phasesOfMoonJD JulianDay
+
+	// 月相时间
+	phasesOfMoonTime Time
+
+	// 定气名称
+	solarTerm string
+
+	// 节气时刻(儒略日)
+	solarTermJD JulianDay
+
+	// 节气时间
+	solarTermTime Time
+
+	// 距冬至的天数
+	CurDZ int
+
+	// 距夏至的天数
+	CurXZ int
+
+	// 距立秋的天数
+	CurLQ int
+
+	// 距芒种的天数
+	CurMZ int
+
+	// 距小暑的天数
+	CurXS int
+
+	// 节日、假期等事件
+	Events Event
 
 	jd int // 儒略日
 	// 补算二气,确保一年中所有月份的“气”全部被计算在内
 	pe1, pe2 int
-	leap     int        // 闰月位置
-	zq       [25]int    // 中气表,其中.liqiu 是节气立秋的儒略日,计算三伏时用到
-	hs       [15]int    // 合朔表
-	dx       [14]int    // 各月大小
-	ymc      [14]string // 各月名称
+	// 闰月位置
+	leap int
+	// 中气表,其中.liqiu 是节气立秋的儒略日,计算三伏时用到
+	zq [25]int
+	// 合朔表
+	hs [15]int
+	// 各月大小
+	dx [14]int
+	// 各月名称
+	ymc [14]string
 }
 
 // NewLunar 生成农历排序,  jd 为儒略日相对于 j2000 的偏移
@@ -287,7 +340,7 @@ func (l *Lunar) calcLunarInfo() {
 func (l *Lunar) calcYXJQ() {
 	var jd = float64(l.jd) + dtT(float64(l.jd)) - 8.0/24
 	////月相查找
-	var w = MsALon(jd/36525, 10, 3)
+	var w = msALon(jd/36525, 10, 3)
 	w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
 	var d float64
 	var D, xn int
@@ -349,7 +402,7 @@ func (l *Lunar) calcYXJQ() {
 	//Bdn = day.MonthDaysCount
 	//jd2 = float64(Bd0) + dtT(float64(Bd0)) - 8.0/24
 	////月相查找
-	//var w = MsALon(jd2/36525, 10, 3)
+	//var w = msALon(jd2/36525, 10, 3)
 	//w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
 	//
 	//for {
@@ -411,7 +464,7 @@ func (l *Lunar) calcYXJQ() {
 //	Bdn = day.MonthDaysCount
 //	jd2 = float64(Bd0) + dtT(float64(Bd0)) - 8.0/24
 //	//月相查找
-//	var w = MsALon(jd2/36525, 10, 3)
+//	var w = msALon(jd2/36525, 10, 3)
 //	w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
 //
 //	for {

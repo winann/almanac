@@ -227,10 +227,10 @@ func msALonT(w float64) float64 {
 	var t float64
 	var v = 7771.37714500204
 	t = (w + 1.08472) / v
-	t += (w - MsALon(t, 3, 3)) / v
+	t += (w - msALon(t, 3, 3)) / v
 	v = mV(t) - eV(t) //v的精度0.5%，详见原文
-	t += (w - MsALon(t, 20, 10)) / v
-	t += (w - MsALon(t, -1, 60)) / v
+	t += (w - msALon(t, 20, 10)) / v
+	t += (w - msALon(t, -1, 60)) / v
 	return t
 }
 
@@ -283,8 +283,8 @@ func dtT(t float64) float64 {
 	return dtCalc(t/365.2425+2000) / 86400.0
 }
 
-// MsALon 月日视黄经的差值
-func MsALon(t float64, Mn int, Sn float64) float64 {
+// msALon 月日视黄经的差值
+func msALon(t float64, Mn int, Sn float64) float64 {
 	return mLon(t, Mn) + gxcMoonLon() - (eLon(t, Sn) + gxcSunLon(t) + math.Pi)
 }
 
