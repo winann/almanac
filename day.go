@@ -71,7 +71,7 @@ type Day struct {
 }
 
 // NewDay 通过日期获取一天的数据
-func NewDay(time Time) (d *Day) {
+func NewDay(time *Time) (d *Day) {
 	d = new(Day)
 
 	// 公历日名称
@@ -79,7 +79,7 @@ func NewDay(time Time) (d *Day) {
 	// 处理 1582 年 10 月等特殊情况
 	time.day = realTime.day
 
-	d.Time = time
+	d.Time = *time
 
 	time.hour = 12
 
@@ -139,6 +139,35 @@ func NewDay(time Time) (d *Day) {
 	d.calcEvents()
 
 	return
+}
+
+// GetTime 获取时间
+func (day *Day) GetTime() *Time {
+	return &day.Time
+}
+
+// GetDynasty 朝代
+// 为 iOS 提供的接口
+func (day *Day) GetDynasty() *Dynasty {
+	return &day.Dynasty
+}
+
+// GetLunar 农历信息
+// 为 iOS 提供的接口
+func (day *Day) GetLunar() *Lunar {
+	return &day.Lunar
+}
+
+// GetHijri 回历信息
+// 为 iOS 提供的接口
+func (day *Day) GetHijri() *Hijri {
+	return &day.Hijri
+}
+
+// GetEvents 节假日信息
+// 为 iOS 提供的接口
+func (day *Day) GetEvents() *Event {
+	return &day.Events
 }
 
 // newDayWithMonth 通过传入的月信息和当前第几天获取日对象
@@ -232,7 +261,7 @@ func (day *Day) calcEvents() {
 		d0 = "0"
 	}
 	d0 += strconv.Itoa(day.day)
-	day.Events.isWeekend = day.Week == 0 || day.Week == 6 // 是否是星期日或星期六
+	day.Events.IsWeekend = day.Week == 0 || day.Week == 6 // 是否是星期日或星期六
 	var s, t string
 	//按公历日期查找
 	for i := 0; i < len(sFtv[day.month-1]); i++ { //公历节日或纪念日,遍历本月节日表
@@ -256,13 +285,13 @@ func (day *Day) calcEvents() {
 			s = s[1:]
 		}
 		if t == "#" {
-			day.Events.festival = append(day.Events.festival, s)
+			day.Events.Festival = append(day.Events.Festival, s)
 		}
 		if t == "I" {
-			day.Events.important = append(day.Events.important, s)
+			day.Events.Important = append(day.Events.Important, s)
 		}
 		if t == "." {
-			day.Events.other = append(day.Events.other, s)
+			day.Events.Other = append(day.Events.Other, s)
 		}
 	}
 
@@ -287,13 +316,13 @@ func (day *Day) calcEvents() {
 		t = s[4:5]
 		s = s[5:]
 		if t == "#" {
-			day.Events.festival = append(day.Events.festival, s)
+			day.Events.Festival = append(day.Events.Festival, s)
 		}
 		if t == "I" {
-			day.Events.important = append(day.Events.important, s)
+			day.Events.Important = append(day.Events.Important, s)
 		}
 		if t == "." {
-			day.Events.other = append(day.Events.other, s)
+			day.Events.Other = append(day.Events.Other, s)
 		}
 	}
 }

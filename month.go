@@ -111,9 +111,9 @@ func (m *Month) calcYXJQ() {
 			continue
 		}
 		var l = &(m.Days[D-Bd0].Lunar)
-		l.phasesOfMoon = yxmc[xn] //取得月相名称
+		l.PhasesOfMoon = yxmc[xn] //取得月相名称
 		l.phasesOfMoonJD = d
-		l.phasesOfMoonTime = timeFromJD(d + float64(j2000))
+		l.PhasesOfMoonTime = timeFromJD(d + float64(j2000))
 		m.Days[D-Bd0].Lunar = *l
 		if D+5 >= Bd0+Bdn {
 			break
@@ -135,9 +135,9 @@ func (m *Month) calcYXJQ() {
 			continue
 		}
 		var l = &(m.Days[D-Bd0].Lunar)
-		l.solarTerm = jqmc[xn] //取得节气名称
+		l.SolarTerm = jqmc[xn] //取得节气名称
 		l.solarTermJD = d
-		l.solarTermTime = timeFromJD(d + float64(j2000))
+		l.SolarTermTime = timeFromJD(d + float64(j2000))
 		m.Days[D-Bd0].Lunar = *l
 		if D+12 >= Bd0+Bdn {
 			break
@@ -178,4 +178,42 @@ func (m Month) FormatCal() string {
 	}
 	//sb.WriteString("\n")
 	return sb.String()
+}
+
+// GetGanName 获得天干的名称
+func (m Month) GetGanName() (ganName string) {
+	ganName = gan[m.ChineseEraGan]
+	return
+}
+
+// GetZhiName 获得地支的名称
+func (m Month) GetZhiName() (zhiName string) {
+	zhiName = zhi[m.ChineseEraZhi]
+	return
+}
+
+// GetChineseZodiacName 获取生肖名称
+func (m Month) GetChineseZodiacName() (chineseZodiacStr string) {
+	chineseZodiacStr = chineseZodiac[m.ChineseEraZhi]
+	return
+}
+
+// GetFirstDayTime 获取月首的日期
+func (m *Month) GetFirstDayTime() *Time {
+	return &m.FirstDayTime
+}
+
+// GetDay 根据下标获取某一天
+// 为 iOS 提供的接口
+func (m Month) GetDay(index int) (day *Day) {
+	if index >= 0 && index < m.DaysCount {
+		day = &m.Days[index]
+	}
+	return
+}
+
+// GetDynasty 获取朝代信息
+// 为 iOS 提供的接口
+func (m Month) GetDynasty() *Dynasty {
+	return &m.Dynasty
 }

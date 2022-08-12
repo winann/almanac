@@ -46,25 +46,25 @@ type Lunar struct {
 	DayName string
 
 	// 节气名称
-	solarTermStr string
+	SolarTermStr string
 
 	// 月相名称
-	phasesOfMoon string
+	PhasesOfMoon string
 
 	// 月相时刻(儒略日)
 	phasesOfMoonJD JulianDay
 
 	// 月相时间
-	phasesOfMoonTime Time
+	PhasesOfMoonTime Time
 
 	// 定气名称
-	solarTerm string
+	SolarTerm string
 
 	// 节气时刻(儒略日)
 	solarTermJD JulianDay
 
 	// 节气时间
-	solarTermTime Time
+	SolarTermTime Time
 
 	// 距冬至的天数
 	CurDZ int
@@ -109,6 +109,24 @@ func NewLunar(jd int) (l *Lunar) {
 	l.cal()
 	l.updateLunar(l.jd)
 	return
+}
+
+// GetPhasesOfMoonTime 获取月相时间，自己查看 PhasesOfMoon 月相是否存在
+// 为 iOS 提供的接口
+func (l *Lunar) GetPhasesOfMoonTime() *Time {
+	return &l.PhasesOfMoonTime
+}
+
+// GetSolarTermTime 获取节气时间，自己查看 SolarTerm 节气是否存在
+// 为 iOS 提供的接口
+func (l *Lunar) GetSolarTermTime() *Time {
+	return &l.SolarTermTime
+}
+
+// GetEvents 获取农历节日
+// 为 iOS 提供的接口
+func (l *Lunar) GetEvents() *Event {
+	return &l.Events
 }
 
 // 排月序(生成实际年历)
@@ -284,9 +302,9 @@ func (l *Lunar) calcLunarInfo() {
 		qk++
 	}
 	if l.jd == l.zq[qk] {
-		l.solarTermStr = jqmc[qk]
+		l.SolarTermStr = jqmc[qk]
 	} else {
-		l.solarTermStr = ""
+		l.SolarTermStr = ""
 	}
 
 	//干支纪年处理
@@ -344,9 +362,9 @@ func (l *Lunar) calcYXJQ() {
 	w = math.Floor((w-0.78)/math.Pi*2) * math.Pi / 2
 	var d float64
 	var D, xn int
-	l.phasesOfMoon = ""
+	l.PhasesOfMoon = ""
 	l.phasesOfMoonJD = 0
-	l.phasesOfMoonTime = Time{}
+	l.PhasesOfMoonTime = Time{}
 	for {
 		d = soAccurate(w)
 		D = floorInt(d + 0.5)
@@ -359,18 +377,18 @@ func (l *Lunar) calcYXJQ() {
 		if D < l.jd {
 			continue
 		}
-		l.phasesOfMoon = yxmc[xn] //取得月相名称
+		l.PhasesOfMoon = yxmc[xn] //取得月相名称
 		l.phasesOfMoonJD = d
-		l.phasesOfMoonTime = timeFromJD(d + float64(j2000))
+		l.PhasesOfMoonTime = timeFromJD(d + float64(j2000))
 		if D+5 >= l.jd {
 			break
 		}
 	}
 
 	//节气查找
-	l.solarTerm = ""
+	l.SolarTerm = ""
 	l.solarTermJD = 0
-	l.solarTermTime = Time{}
+	l.SolarTermTime = Time{}
 	w = sALon(jd/36525, 3)
 	w = math.Floor((w-0.13)/pi2*24) * pi2 / 24
 	for {
@@ -384,9 +402,9 @@ func (l *Lunar) calcYXJQ() {
 		if D < l.jd {
 			continue
 		}
-		l.solarTerm = jqmc[xn] //取得节气名称
+		l.SolarTerm = jqmc[xn] //取得节气名称
 		l.solarTermJD = d
-		l.solarTermTime = timeFromJD(d + float64(j2000))
+		l.SolarTermTime = timeFromJD(d + float64(j2000))
 
 		if D+12 >= l.jd {
 			break
@@ -417,9 +435,9 @@ func (l *Lunar) calcYXJQ() {
 	//		continue
 	//	}
 	//	if D-Bd0 == day.IndexInMonth {
-	//		l.phasesOfMoon = phasesOfMoon[xn] //取得月相名称
+	//		l.PhasesOfMoon = PhasesOfMoon[xn] //取得月相名称
 	//		l.phasesOfMoonJD = d
-	//		l.phasesOfMoonTime = timeFromJD(d + float64(j2000))
+	//		l.PhasesOfMoonTime = timeFromJD(d + float64(j2000))
 	//	}
 	//
 	//	if D+5 >= Bd0+Bdn {
@@ -442,9 +460,9 @@ func (l *Lunar) calcYXJQ() {
 	//		continue
 	//	}
 	//	if D-Bd0 == day.IndexInMonth {
-	//		l.solarTerm = solarTerm[xn] //取得节气名称
+	//		l.SolarTerm = SolarTerm[xn] //取得节气名称
 	//		l.solarTermJD = d
-	//		l.solarTermTime = timeFromJD(d + float64(j2000))
+	//		l.SolarTermTime = timeFromJD(d + float64(j2000))
 	//	}
 	//
 	//	if D+12 >= Bd0+Bdn {
@@ -479,9 +497,9 @@ func (l *Lunar) calcYXJQ() {
 //			continue
 //		}
 //		if D-Bd0 == day.IndexInMonth {
-//			l.phasesOfMoon = phasesOfMoon[xn] //取得月相名称
+//			l.PhasesOfMoon = PhasesOfMoon[xn] //取得月相名称
 //			l.phasesOfMoonJD = d
-//			l.phasesOfMoonTime = timeFromJD(d + float64(j2000))
+//			l.PhasesOfMoonTime = timeFromJD(d + float64(j2000))
 //		}
 //
 //		if D+5 >= Bd0+Bdn {
@@ -504,9 +522,9 @@ func (l *Lunar) calcYXJQ() {
 //			continue
 //		}
 //		if D-Bd0 == day.IndexInMonth {
-//			l.solarTerm = solarTerm[xn] //取得节气名称
+//			l.SolarTerm = SolarTerm[xn] //取得节气名称
 //			l.solarTermJD = d
-//			l.solarTermTime = timeFromJD(d + float64(j2000))
+//			l.SolarTermTime = timeFromJD(d + float64(j2000))
 //		}
 //
 //		if D+12 >= Bd0+Bdn {
@@ -527,116 +545,116 @@ func (l *Lunar) calcLunarEvents() {
 	d += l.DayName
 	if l.LeapStr != "闰" {
 		if d == "正月初一" {
-			l.Events.festival = append(l.Events.festival, "春节")
+			l.Events.Festival = append(l.Events.Festival, "春节")
 		}
 		if d == "正月初二" {
-			l.Events.important = append(l.Events.festival, "大年初二")
+			l.Events.Important = append(l.Events.Festival, "大年初二")
 		}
 		if d == "正月初六" {
-			l.Events.other = append(l.Events.other, "送穷日")
+			l.Events.Other = append(l.Events.Other, "送穷日")
 		}
 		if d == "五月初五" {
-			l.Events.festival = append(l.Events.festival, "端午节")
+			l.Events.Festival = append(l.Events.Festival, "端午节")
 		}
 		if d == "八月十五" {
-			l.Events.festival = append(l.Events.festival, "中秋节")
+			l.Events.Festival = append(l.Events.Festival, "中秋节")
 		}
 		if d == "正月十五" {
-			l.Events.festival = append(l.Events.festival, "元宵节")
-			l.Events.important = append(l.Events.important, "上元节")
-			l.Events.other = append(l.Events.other, "壮族歌墟节", "苗族踩山节", "达斡尔族卡钦")
+			l.Events.Festival = append(l.Events.Festival, "元宵节")
+			l.Events.Important = append(l.Events.Important, "上元节")
+			l.Events.Other = append(l.Events.Other, "壮族歌墟节", "苗族踩山节", "达斡尔族卡钦")
 		}
 		if d == "正月十六" {
-			l.Events.other = append(l.Events.other, "侗族芦笙节(至正月二十)")
+			l.Events.Other = append(l.Events.Other, "侗族芦笙节(至正月二十)")
 		}
 		if d == "正月廿五" {
-			l.Events.other = append(l.Events.other, "填仓节")
+			l.Events.Other = append(l.Events.Other, "填仓节")
 		}
 
 		if d == "二月初一" {
-			l.Events.other = append(l.Events.other, "瑶族忌鸟节")
+			l.Events.Other = append(l.Events.Other, "瑶族忌鸟节")
 		}
 		if d == "二月初二" {
-			l.Events.important = append(l.Events.important, "春龙节(龙抬头)")
-			l.Events.other = append(l.Events.other, "畲族会亲节")
+			l.Events.Important = append(l.Events.Important, "春龙节(龙抬头)")
+			l.Events.Other = append(l.Events.Other, "畲族会亲节")
 		}
 		if d == "二月初八" {
-			l.Events.other = append(l.Events.other, "傈傈族刀杆节")
+			l.Events.Other = append(l.Events.Other, "傈傈族刀杆节")
 		}
 		if d == "三月初三" {
-			l.Events.important = append(l.Events.important, "北帝诞")
-			l.Events.other = append(l.Events.other, "苗族黎族歌墟节")
+			l.Events.Important = append(l.Events.Important, "北帝诞")
+			l.Events.Other = append(l.Events.Other, "苗族黎族歌墟节")
 		}
 		if d == "三月十五" {
-			l.Events.other = append(l.Events.other, "白族三月街(至三月二十)")
+			l.Events.Other = append(l.Events.Other, "白族三月街(至三月二十)")
 		}
 		if d == "三月廿三" {
-			l.Events.important = append(l.Events.important, "天后诞", "妈祖诞")
+			l.Events.Important = append(l.Events.Important, "天后诞", "妈祖诞")
 		}
 		if d == "四月初八" {
-			l.Events.important = append(l.Events.important, "牛王诞")
+			l.Events.Important = append(l.Events.Important, "牛王诞")
 		}
 		if d == "四月十八" {
-			l.Events.other = append(l.Events.other, "锡伯族西迁节")
+			l.Events.Other = append(l.Events.Other, "锡伯族西迁节")
 		}
 		if d == "五月十三" {
-			l.Events.important = append(l.Events.important, "关帝诞")
-			l.Events.other = append(l.Events.other, "阿昌族泼水节")
+			l.Events.Important = append(l.Events.Important, "关帝诞")
+			l.Events.Other = append(l.Events.Other, "阿昌族泼水节")
 		}
 		if d == "五月廿二" {
-			l.Events.other = append(l.Events.other, "鄂温克族米阔鲁节")
+			l.Events.Other = append(l.Events.Other, "鄂温克族米阔鲁节")
 		}
 		if d == "五月廿九" {
-			l.Events.other = append(l.Events.other, "瑶族达努节")
+			l.Events.Other = append(l.Events.Other, "瑶族达努节")
 		}
 		if d == "六月初六" {
-			l.Events.important = append(l.Events.important, "姑姑节", "天贶节")
-			l.Events.other = append(l.Events.other, "壮族祭田节", "瑶族尝新节")
+			l.Events.Important = append(l.Events.Important, "姑姑节", "天贶节")
+			l.Events.Other = append(l.Events.Other, "壮族祭田节", "瑶族尝新节")
 		}
 		if d == "六月廿四" {
-			l.Events.other = append(l.Events.other, "火把节、星回节(彝、白、佤、阿昌、纳西、基诺族)")
+			l.Events.Other = append(l.Events.Other, "火把节、星回节(彝、白、佤、阿昌、纳西、基诺族)")
 		}
 		if d == "七月初七" {
-			l.Events.important = append(l.Events.important, "七夕(中国情人节,乞巧节,女儿节)")
+			l.Events.Important = append(l.Events.Important, "七夕(中国情人节,乞巧节,女儿节)")
 		}
 		if d == "七月十三" {
-			l.Events.other = append(l.Events.other, "侗族吃新节")
+			l.Events.Other = append(l.Events.Other, "侗族吃新节")
 		}
 		if d == "七月十五" {
-			l.Events.important = append(l.Events.important, "中元节、鬼节")
+			l.Events.Important = append(l.Events.Important, "中元节、鬼节")
 		}
 		if d == "九月初九" {
-			l.Events.important = append(l.Events.important, "重阳节")
+			l.Events.Important = append(l.Events.Important, "重阳节")
 		}
 		if d == "十月初一" {
-			l.Events.important = append(l.Events.important, "祭祖节(十月朝)")
+			l.Events.Important = append(l.Events.Important, "祭祖节(十月朝)")
 		}
 		if d == "十月十五" {
-			l.Events.important = append(l.Events.important, "下元节")
+			l.Events.Important = append(l.Events.Important, "下元节")
 		}
 		if d == "十月十六" {
-			l.Events.other = append(l.Events.other, "瑶族盘王节")
+			l.Events.Other = append(l.Events.Other, "瑶族盘王节")
 		}
 		if d == "十二初八" {
-			l.Events.important = append(l.Events.important, "腊八节")
+			l.Events.Important = append(l.Events.Important, "腊八节")
 		}
 	}
 	if l.NextMonthName == "正" { //最后一月
 		if d == "十二三十" && l.MonthDayCount == 30 {
-			l.Events.festival = append(l.Events.festival, "除夕")
+			l.Events.Festival = append(l.Events.Festival, "除夕")
 		}
 		if d == "十二廿九" && l.MonthDayCount == 29 {
-			l.Events.festival = append(l.Events.festival, "除夕")
+			l.Events.Festival = append(l.Events.Festival, "除夕")
 		}
 		if d == "十二廿三" {
-			l.Events.important = append(l.Events.important, "北方小年")
+			l.Events.Important = append(l.Events.Important, "北方小年")
 		}
 		if d == "十二廿四" {
-			l.Events.important = append(l.Events.important, "南方小年")
+			l.Events.Important = append(l.Events.Important, "南方小年")
 		}
 	}
-	if l.solarTermStr != "" {
-		l.Events.important = append(l.Events.important, l.solarTermStr)
+	if l.SolarTermStr != "" {
+		l.Events.Important = append(l.Events.Important, l.SolarTermStr)
 	}
 
 	//农历杂节
@@ -644,28 +662,28 @@ func (l *Lunar) calcLunarEvents() {
 	if l.CurDZ >= 0 && l.CurDZ < 81 { //数九
 		w = numCn[l.CurDZ/9+1]
 		if l.CurDZ%9 == 0 {
-			l.Events.important = append(l.Events.important, w+"九")
+			l.Events.Important = append(l.Events.Important, w+"九")
 		} else {
-			l.Events.other = append(l.Events.other, w+"九第"+strconv.Itoa(l.CurDZ%9+1)+"天")
+			l.Events.Other = append(l.Events.Other, w+"九第"+strconv.Itoa(l.CurDZ%9+1)+"天")
 		}
 	}
 
 	w = string([]rune(l.DayGanZhiName)[0])
 	w2 = string([]rune(l.DayGanZhiName)[1])
 	if l.CurXZ >= 20 && l.CurXZ < 30 && w == "庚" {
-		l.Events.important = append(l.Events.important, "初伏")
+		l.Events.Important = append(l.Events.Important, "初伏")
 	}
 	if l.CurXZ >= 30 && l.CurXZ < 40 && w == "庚" {
-		l.Events.important = append(l.Events.important, "中伏")
+		l.Events.Important = append(l.Events.Important, "中伏")
 	}
 	if l.CurLQ >= 0 && l.CurLQ < 10 && w == "庚" {
-		l.Events.important = append(l.Events.important, "末伏")
+		l.Events.Important = append(l.Events.Important, "末伏")
 	}
 	if l.CurMZ >= 0 && l.CurMZ < 10 && w == "丙" {
-		l.Events.important = append(l.Events.important, "入梅")
+		l.Events.Important = append(l.Events.Important, "入梅")
 	}
 	if l.CurXS >= 0 && l.CurXS < 12 && w2 == "未" {
-		l.Events.important = append(l.Events.important, "出梅")
+		l.Events.Important = append(l.Events.Important, "出梅")
 	}
 }
 

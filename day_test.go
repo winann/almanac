@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewDay(t *testing.T) {
-	var time = Time{-1000, 12, 30, 14, 0, 0}
+	var time = NewTime(-1000, 12, 30, 14, 0, 0)
 	var day = NewDay(time)
 	if day.MonthFirstWeek != 6 ||
 		day.MonthDaysCount != 31 ||
@@ -17,7 +17,7 @@ func TestNewDay(t *testing.T) {
 		t.Error(day)
 	}
 
-	time = Time{1582, 10, 4, 14, 0, 0}
+	time = NewTime(1582, 10, 4, 14, 0, 0)
 	day = NewDay(time)
 	if day.MonthFirstWeek != 1 ||
 		day.MonthDaysCount != 21 ||
@@ -29,7 +29,7 @@ func TestNewDay(t *testing.T) {
 		t.Error(day)
 	}
 
-	time = Time{1582, 10, 22, 14, 0, 0}
+	time = NewTime(1582, 10, 22, 14, 0, 0)
 	day = NewDay(time)
 	if day.MonthFirstWeek != 1 ||
 		day.MonthDaysCount != 21 ||
@@ -41,7 +41,7 @@ func TestNewDay(t *testing.T) {
 		t.Error(day)
 	}
 
-	time = Time{2022, 8, 5, 14, 0, 0}
+	time = NewTime(2022, 8, 5, 14, 0, 0)
 	day = NewDay(time)
 	if day.MonthFirstWeek != 1 ||
 		day.MonthDaysCount != 31 ||
@@ -53,7 +53,7 @@ func TestNewDay(t *testing.T) {
 		t.Error(day)
 	}
 
-	time = Time{9999, 12, 31, 14, 0, 0}
+	time = NewTime(9999, 12, 31, 14, 0, 0)
 	day = NewDay(time)
 	if day.MonthFirstWeek != 3 ||
 		day.MonthDaysCount != 31 ||
@@ -69,35 +69,35 @@ func TestNewDay(t *testing.T) {
 
 // 测试回历
 func TestCalcHijri(t *testing.T) {
-	var time = Time{-1000, 12, 30, 14, 0, 0}
+	var time = NewTime(-1000, 12, 30, 14, 0, 0)
 	var day = NewDay(time)
 	var e = Hijri{-1671, 8, 27}
 	if day.Hijri != e {
 		t.Error(time, "calcHijri error:", day.Hijri, ", But expect:", e)
 	}
 
-	time = Time{1582, 10, 4, 14, 0, 0}
+	time = NewTime(1582, 10, 4, 14, 0, 0)
 	day = NewDay(time)
 	e = Hijri{990, 9, 16}
 	if day.Hijri != e {
 		t.Error(time, "calcHijri error:", day.Hijri, ", But expect:", e)
 	}
 
-	time = Time{1582, 10, 22, 14, 0, 0}
+	time = NewTime(1582, 10, 22, 14, 0, 0)
 	day = NewDay(time)
 	e = Hijri{990, 9, 24}
 	if day.Hijri != e {
 		t.Error(time, "calcHijri error:", day.Hijri, ", But expect:", e)
 	}
 
-	time = Time{2022, 7, 29, 14, 0, 0}
+	time = NewTime(2022, 7, 29, 14, 0, 0)
 	day = NewDay(time)
 	e = Hijri{1443, 12, 29}
 	if day.Hijri != e {
 		t.Error(time, "calcHijri error:", day.Hijri, ", But expect:", e)
 	}
 
-	time = Time{9999, 12, 31, 14, 0, 0}
+	time = NewTime(9999, 12, 31, 14, 0, 0)
 	day = NewDay(time)
 	e = Hijri{9666, 4, 2}
 	if day.Hijri != e {
@@ -106,17 +106,17 @@ func TestCalcHijri(t *testing.T) {
 }
 
 func TestWeekIndex(t *testing.T) {
-	var day = NewDay(Time{2022, 1, 1, 0, 0, 0})
+	var day = NewDay(NewTime(2022, 1, 1, 0, 0, 0))
 	if day.WeekIndexInYear != 0 || day.WeekIndexInMonth != 0 {
 		t.Error(day.Time, " Week Index error:")
 	}
 
-	day = NewDay(Time{2022, 8, 10, 0, 0, 0})
+	day = NewDay(NewTime(2022, 8, 10, 0, 0, 0))
 	if day.WeekIndexInYear != 32 || day.WeekIndexInMonth != 1 {
 		t.Error(day.Time, " Week Index error:")
 	}
 
-	day = NewDay(Time{2022, 12, 31, 0, 0, 0})
+	day = NewDay(NewTime(2022, 12, 31, 0, 0, 0))
 	if day.WeekIndexInYear != 52 || day.WeekIndexInMonth != 4 {
 		t.Error(day.Time, " Week Index error:")
 	}

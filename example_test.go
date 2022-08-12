@@ -18,8 +18,15 @@ func ExampleJulianDay() {
 //	// {2022 7 13 17 25 42}
 //}
 
+func ExampleNewTime() {
+	var t = NewTime(2022, 8, 11, 15, 34, 35)
+	fmt.Println(t)
+	// Output:
+	// &{2022 8 11 15 34 35}
+}
+
 func ExampleNewDay() {
-	var day = NewDay(Time{year: 2022, month: 8, day: 12})
+	var day = NewDay(&Time{year: 2022, month: 8, day: 12})
 	fmt.Println(*day)
 
 	// Output:

@@ -20,6 +20,13 @@ type Time struct {
 	year, month, day, hour, minute, second int
 }
 
+// NewTime 创建时间
+// 为 iOS 提供的接口
+func NewTime(year, month, day, hour, minute, second int) (t *Time) {
+	t = &Time{year, month, day, hour, minute, second}
+	return
+}
+
 // TimeNow 获取当前时间
 func TimeNow() (t Time) {
 	var sysTime = time.Now()

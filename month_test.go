@@ -62,7 +62,7 @@ Sun Mon Tue Wed Thu Fri Sat
 
 func TestYXJQ(t *testing.T) {
 	var m = NewMonth(2022, 8)
-	if m.Days[4].phasesOfMoon != "上弦" {
+	if m.Days[4].PhasesOfMoon != "上弦" {
 		t.Error("calYXJQ error:", m.Days[5])
 	}
 }
